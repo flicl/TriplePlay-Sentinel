@@ -1,0 +1,42 @@
+{
+    "inputs": [
+        {
+          "type": "promptString",
+          "id": "github_token_DNS",
+          "description": "GitHub Personal Access Token",
+          "password": true
+        }
+    ],
+    "servers": {
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "${workspaceFolder}"
+            ]
+        },
+        "github": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-github"
+          ],
+          "env": {
+            "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github_token_DNS}"
+            }
+          },
+          "desktop-commander": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@wonderwhy-er/desktop-commander"
+            ]
+          },
+          "browsermcp": {
+            "command": "npx",
+            "args": ["@browsermcp/mcp@latest"]
+          }
+        }
+    }
+}

@@ -1,0 +1,6 @@
+// Get the entire config
+get_config({})
+
+// Set multiple config values using separate calls
+set_config_value({ "key": "defaultShell", "value": "/bin/bash" })
+set_config_value({ "key": "allowedDirectories", "value": ["/home/felicio/Projects/TriplePlay-Sentinel/"] })
