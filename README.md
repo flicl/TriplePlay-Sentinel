@@ -17,11 +17,11 @@ O Sentinel utiliza uma arquitetura onde o `collector.py` atua como componente ce
 
 ```mermaid
 flowchart LR
-   A[Zabbix\nServer/Proxy] -->|HTTP(S) Request\nItem HTTP Agent| B[collector.py\nDocker Container]
-   B -->|API/SSH| C[Dispositivos\nMikroTik\nRouterOS]
+   A[Zabbix Server/Proxy] -->|HTTP(S) Request| B[collector.py Docker Container]
+   B -->|API/SSH| C[Dispositivos MikroTik RouterOS]
    C -->|API/SSH Result| B
-   B -->|HTTP(S) Response\nJSON Data| A
-   B -.->|Configuração/\nCredenciais| D[(Volume/Env\nVars/DB)]
+   B -->|HTTP(S) Response| A
+   B -.->|Configuração| D[(Volume/Env Vars/DB)]
 ```
 
 ### Pré-requisitos
