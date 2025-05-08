@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  collector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tripleplay/sentinel-collector:latest
+    container_name: sentinel-collector
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src/collector/.env:/app/.env
+      - ./logs:/app/logs
+    environment:
+      - TZ=America/Sao_Paulo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - sentinel-network
+
+networks:
+  sentinel-network:
+    driver: bridge

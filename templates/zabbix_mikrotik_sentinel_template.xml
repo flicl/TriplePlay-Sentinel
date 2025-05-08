@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2025-05-08T12:00:00Z</date>
+    <groups>
+        <group>
+            <name>Templates/Network</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template MikroTik Sentinel Monitoring</template>
+            <name>Template MikroTik Sentinel Monitoring</name>
+            <description>Template para monitoramento de conectividade utilizando o Sentinel (MikroTik-Zabbix).</description>
+            <groups>
+                <group>
+                    <name>Templates/Network</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>Conectividade</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Ping para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+                    <type>HTTP_AGENT</type>
+                    <key>mikrotik.sentinel.ping[{$TARGET_IP}]</key>
+                    <delay>1m</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <description>Teste de ping para {$TARGET_IP} utilizando o roteador MikroTik {HOST.NAME} como ponto de origem.</description>
+                    <applications>
+                        <application>
+                            <name>Conectividade</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing/>
+                    <url>{$SENTINEL_URL}/test</url>
+                    <posts>{"mikrotik_host": "{$MIKROTIK_HOST}", "test_type": "ping", "target": "{$TARGET_IP}", "count": "{$PING_COUNT}", "mikrotik_user": "{$MIKROTIK_USER}", "mikrotik_password": "{$MIKROTIK_PASSWORD}"}</posts>
+                    <post_type>JSON</post_type>
+                    <request_method>POST</request_method>
+                    <output_format>JSON</output_format>
+                    <timeout>10s</timeout>
+                    <status_codes>200</status_codes>
+                    <follow_redirects>YES</follow_redirects>
+                    <retrieve_mode>BOTH</retrieve_mode>
+                </item>
+                <item>
+                    <name>Perda de pacotes para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+                    <type>DEPENDENT</type>
+                    <key>mikrotik.sentinel.ping.packetloss[{$TARGET_IP}]</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Perda de pacotes para {$TARGET_IP} utilizando o roteador MikroTik {HOST.NAME} como ponto de origem.</description>
+                    <applications>
+                        <application>
+                            <name>Conectividade</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <params>$.ping_stats.packet_loss</params>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>mikrotik.sentinel.ping[{$TARGET_IP}]</key>
+                    </master_item>
+                </item>
+                <item>
+                    <name>Latência média para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+                    <type>DEPENDENT</type>
+                    <key>mikrotik.sentinel.ping.avg[{$TARGET_IP}]</key>
+                    <delay>0</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>ms</units>
+                    <description>Latência média para {$TARGET_IP} utilizando o roteador MikroTik {HOST.NAME} como ponto de origem.</description>
+                    <applications>
+                        <application>
+                            <name>Conectividade</name>
+                        </application>
+                    </applications>
+                    <valuemap/>
+                    <logtimefmt/>
+                    <preprocessing>
+                        <step>
+                            <type>JSONPATH</type>
+                            <params>$.ping_stats.avg_rtt</params>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>mikrotik.sentinel.ping[{$TARGET_IP}]</key>
+                    </master_item>
+                </item>
+            </items>
+            <discovery_rules/>
+            <macros>
+                <macro>
+                    <macro>{$MIKROTIK_HOST}</macro>
+                    <value>192.168.88.1</value>
+                    <description>Endereço IP do roteador MikroTik que executará os testes</description>
+                </macro>
+                <macro>
+                    <macro>{$MIKROTIK_USER}</macro>
+                    <value>admin</value>
+                    <description>Usuário para acesso ao roteador MikroTik</description>
+                </macro>
+                <macro>
+                    <macro>{$MIKROTIK_PASSWORD}</macro>
+                    <value>password</value>
+                    <description>Senha para acesso ao roteador MikroTik</description>
+                </macro>
+                <macro>
+                    <macro>{$PING_COUNT}</macro>
+                    <value>3</value>
+                    <description>Número de pacotes ICMP a serem enviados em cada teste</description>
+                </macro>
+                <macro>
+                    <macro>{$SENTINEL_URL}</macro>
+                    <value>http://sentinel-collector:5000</value>
+                    <description>URL do serviço Sentinel Collector</description>
+                </macro>
+                <macro>
+                    <macro>{$TARGET_IP}</macro>
+                    <value>8.8.8.8</value>
+                    <description>Endereço IP alvo do monitoramento</description>
+                </macro>
+            </macros>
+            <tags/>
+            <dashboards/>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <name>Alta latência para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+            <expression>{Template MikroTik Sentinel Monitoring:mikrotik.sentinel.ping.avg[{$TARGET_IP}].last()}&gt;100</expression>
+            <recovery_mode>EXPRESSION</recovery_mode>
+            <recovery_expression>{Template MikroTik Sentinel Monitoring:mikrotik.sentinel.ping.avg[{$TARGET_IP}].last()}&lt;50</recovery_expression>
+            <name>Alta latência para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+            <priority>WARNING</priority>
+            <description>A latência para {$TARGET_IP} está acima de 100ms</description>
+            <manual_close>NO</manual_close>
+        </trigger>
+        <trigger>
+            <name>Perda de pacotes para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+            <expression>{Template MikroTik Sentinel Monitoring:mikrotik.sentinel.ping.packetloss[{$TARGET_IP}].last()}&gt;0</expression>
+            <recovery_mode>EXPRESSION</recovery_mode>
+            <recovery_expression>{Template MikroTik Sentinel Monitoring:mikrotik.sentinel.ping.packetloss[{$TARGET_IP}].last()}=0</recovery_expression>
+            <name>Perda de pacotes para {$TARGET_IP} via MikroTik {HOST.NAME}</name>
+            <priority>AVERAGE</priority>
+            <description>Há perda de pacotes para {$TARGET_IP}</description>
+            <manual_close>NO</manual_close>
+        </trigger>
+    </triggers>
+</zabbix_export>

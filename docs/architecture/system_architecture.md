@@ -22,6 +22,10 @@ O Sentinel é um sistema de monitoramento centralizado que integra dispositivos 
 - Executa comandos remotamente nos dispositivos
 - Processa os resultados e retorna dados estruturados
 - Dockerizado para fácil implantação e escalabilidade
+- Implementado em Python utilizando Flask e Paramiko
+- Endpoints RESTful para integração com sistemas externos
+- Processamento assíncrono de múltiplas requisições
+- Validação de dados e tratamento de erros
 
 ### 3. Dispositivos MikroTik (RouterOS)
 
