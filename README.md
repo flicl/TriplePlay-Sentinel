@@ -1,7 +1,15 @@
-# Projeto Sentinel
+# Projeto Sen### Arquitetura
 
-## Sistema de Monitoramento Centralizado MikroTik-Zabbix
+O Sentinel utiliza uma arquitetura onde o `collector.py` atua como componente central:
 
+```mermaid
+graph LR;
+    A[Zabbix Server/Proxy] --> |HTTP(S) Request| B[collector.py Docker Container];
+    B --> |API/SSH| C[Dispositivos MikroTik RouterOS];
+    C --> |API/SSH Result| B;
+    B --> |HTTP(S) Response| A;
+    B -. |Configuração| .-> D[(Volume/Env Vars/DB)];
+```
 O Sentinel é um sistema de monitoramento centralizado que integra dispositivos MikroTik com o Zabbix, permitindo monitorar a conectividade de rede de forma eficiente e escalável. Ele atua como um gateway de monitoramento, onde o Zabbix define o que monitorar, qual MikroTik deve realizar os testes e para quais IPs alvo.
 
 ### Principais Características
