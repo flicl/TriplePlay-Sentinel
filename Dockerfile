@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Instala dependências do sistema
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc python3-dev && \
+    apt-get install -y --no-install-recommends gcc python3-dev curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -15,6 +15,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o código da aplicação
 COPY src/collector /app/
 
+# Cria diretórios necessários
+RUN mkdir -p logs config
+
 # Cria arquivo .env vazio para ser substituído em tempo de execução
 RUN touch .env
 
@@ -22,4 +25,4 @@ RUN touch .env
 EXPOSE 5000
 
 # Define o comando de inicialização
-CMD ["python", "collector.py"]
+CMD ["python", "collector_new.py"]

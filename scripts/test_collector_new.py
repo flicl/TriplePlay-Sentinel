@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-test_collector.py - Script para teste do Sentinel Collector
+test_collector_new.py - Script para teste do Sentinel Collector (versão atualizada)
 
-Este script testa o funcionamento do coletor enviando requisições de teste.
+Este script testa o funcionamento do coletor enviando requisições de teste,
+suportando todos os tipos de teste disponíveis.
 
 Autor: TriplePlay Team
 Data: Maio 2025
@@ -176,34 +177,40 @@ def display_traceroute_results(result):
             ip = hop.get('ip', '*')
             hostname = hop.get('hostname', '')
             print(f"  {hop['hop']:2d}  {ip:15s} {hostname:30s} {rtt}")
-                return False
-        else:
-            print(f"❌ Erro na requisição: {response.status_code}")
-            return False
-    except Exception as e:
-        print(f"❌ Erro ao executar teste: {str(e)}")
-        return False
 
 def main():
-    """Função principal"""
+    """Função principal do script"""
     args = parse_args()
     
-    # Verifica saúde do serviço
+    # Verifica a saúde do serviço
     if not check_health(args.url):
-        sys.exit(1)
+        print("⚠️ Problemas detectados. Continuando mesmo assim...")
     
     # Obtém informações de versão
     get_version(args.url)
     
-    # Executa teste de ping
-    run_ping_test(
-        args.url, 
-        args.mikrotik, 
-        args.user, 
-        args.password, 
-        args.target, 
-        args.count
-    )
+    # Executa o teste solicitado
+    if args.test == "ping":
+        run_test(
+            args.url, "ping", args.mikrotik, args.user, args.password, args.target, 
+            count=args.count, no_cache=args.no_cache, verbose=args.verbose
+        )
+    elif args.test == "tcp":
+        run_test(
+            args.url, "tcp", args.mikrotik, args.user, args.password, args.target, 
+            port=args.port, no_cache=args.no_cache, verbose=args.verbose
+        )
+    elif args.test == "traceroute":
+        run_test(
+            args.url, "traceroute", args.mikrotik, args.user, args.password, args.target, 
+            max_hops=args.max_hops, no_cache=args.no_cache, verbose=args.verbose
+        )
+    else:
+        print(f"❌ Tipo de teste não suportado: {args.test}")
+        return 1
+    
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

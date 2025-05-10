@@ -7,9 +7,12 @@ O Sentinel é um sistema de monitoramento centralizado que integra dispositivos 
 ### Principais Características
 
 - **Centralização**: Elimina a necessidade de scripts locais nos dispositivos MikroTik
-- **Flexibilidade**: Suporta diferentes tipos de testes (ping, TCP connect)
+- **Flexibilidade**: Suporta diferentes tipos de testes (ping, TCP connect, traceroute)
 - **Escalabilidade**: Arquitetura que permite fácil expansão horizontal
 - **Segurança**: Comunicação segura entre componentes
+- **Dashboard Web**: Interface gráfica para visualização e execução manual de testes
+- **Configuração Avançada**: Sistema robusto com fallback e suporte a criptografia
+- **Cache de Resultados**: Otimização de performance para testes frequentes
 
 ### Arquitetura
 
