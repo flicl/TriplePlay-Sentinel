@@ -1,6 +1,46 @@
 # Configuração do Zabbix para o Sentinel
 
-Este guia detalha como configurar o Zabbix para integração com o sistema Sentinel, incluindo a importação do template, configuração de hosts e definição de macros.
+Este guia detalha como configurar o Zabbix para integração com o sistema Sentinel utilizando **arquitetura HTTP Agent (PULL)```json
+{
+  "mikrotik_ip": "{$MIKROTIK_IP}",      # Dispositivo controlado pelo Zabbix
+  "mikrotik_user": "{$MIKROTIK_USER}",
+  "mikrotik_pass": "{$MIKROTIK_PASSWORD}",
+  "mikrotik_port": "{$MIKROTIK_PORT}",
+  "target_ip": "{$TARGET_IP}",          # Alvo definido pelo Zabbix
+  "test_type": "tcp",                   # Tipo controlado centralmente
+  "tcp_port": "{$TCP_PORT}"             # Porta definida por macro
+}
+```
+
+## Pré-processamento JSONPath - Extração Automática
+
+O Zabbix processa automaticamente as respostas JSON do collector usando JSONPath, extraindo métricas específicas sem necessidade de scripts externos:
+
+### 🔍 Extração Inteligente de Métricas:
+- **Ping Latency (Average)**: `$.average_latency_ms` - Latência média extraída automaticamente
+- **Ping Packet Loss (%)**: `$.packet_loss_percent` - Percentual de perda calculado
+- **TCP Connection Time**: `$.connection_time_ms` - Tempo de conexão medido
+- **TCP Connection Status**: `$.status` → (convertido para 1 se "success", 0 se "failed")
+
+### 🚀 Vantagens do Pré-processamento:
+- **Processamento Local**: Extração realizada no próprio Zabbix
+- **Sem Dependências**: Não requer scripts externos ou agentes
+- **Performance**: Processamento otimizado e rápido
+- **Confiabilidade**: Menos pontos de falha no sistemantém controle total sobre o monitoramento, incluindo a importação do template, configuração de hosts e definição de macros.
+
+## 🎯 Vantagens da Arquitetura HTTP Agent (PULL)
+
+### Controle Total pelo Zabbix:
+- **QUANDO**: Zabbix determina frequência e timing dos testes
+- **ONDE**: Zabbix escolhe quais dispositivos monitorar  
+- **O QUE**: Zabbix define tipos de teste e parâmetros
+- **COMO**: Zabbix processa resultados com JSONPath automático
+
+### Eficiência Superior:
+- **Cache Inteligente**: TTL de 30 segundos evita testes redundantes
+- **Sem Sobrecarga**: Dispositivos MikroTik não executam scripts locais
+- **Recursos Otimizados**: Processamento centralizado no collector
+- **Escalabilidade**: Múltiplos collectors gerenciados centralmente
 
 ## Pré-requisitos
 
@@ -55,6 +95,21 @@ Configure as seguintes macros para cada host:
 | `{$MIKROTIK_PORT}` | Porta API do MikroTik (padrão: 8728 para API, 22 para SSH) | `8728` |
 | `{$TARGET_IP}` | Endereço IP alvo para os testes | `8.8.8.8` |
 | `{$TEST_TYPE}` | Tipo de teste a ser executado ("ping" ou "tcp") | `ping` |
+
+## Usando o IP do Host como Alvo de Monitoramento
+
+Para monitorar o próprio host como alvo (em vez de um IP fixo), você pode usar a macro embutida do Zabbix `{HOST.IP}` da seguinte forma:
+
+1. Nas configurações de macros do host, defina a macro `{$TARGET_IP}` com o valor `{HOST.IP}`:
+   - Navegue até **Configuration** > **Hosts**
+   - Selecione o host desejado
+   - Vá para a aba **Macros**
+   - Adicione ou edite a macro `{$TARGET_IP}` com o valor `{HOST.IP}`
+
+2. Isso fará com que o sistema Sentinel utilize o IP do próprio host como alvo para os testes de ping e TCP.
+
+> **Nota**: As macros embutidas do Zabbix como `{HOST.IP}` só funcionam quando definidas no nível do host, não como valor padrão no template.
+
 | `{$PING_COUNT}` | Número de pacotes ping a serem enviados | `10` |
 | `{$PING_TIMEOUT}` | Timeout de cada pacote ping em segundos | `1` |
 | `{$TCP_PORT}` | Porta TCP para o teste de conexão | `80` |
@@ -102,36 +157,39 @@ O template "Sentinel - Network Monitoring" inclui:
 - **High TCP Connection Time**: Alerta quando o tempo de conexão TCP excede o threshold.
 - **No Data from Collector**: Alerta quando não há dados recebidos do collector.
 
-## Detalhes da Configuração HTTP Agent
+## Detalhes da Configuração HTTP Agent - Arquitetura PULL
 
-Os itens HTTP Agent são configurados para enviar requisições POST para o collector. A configuração típica inclui:
+Os itens HTTP Agent são o coração da arquitetura PULL, permitindo que o Zabbix mantenha controle total sobre o monitoramento. A configuração típica demonstra como o Zabbix orquestra cada aspecto:
 
-### URL
+### 🎯 Controle de Requisições
+O Zabbix envia requisições estruturadas em intervalos controlados, utilizando macros que são expandidas automaticamente:
+
+### URL do Collector
 ```
-{$COLLECTOR_URL}
+{$COLLECTOR_URL}  # Exemplo: http://sentinel-collector:8000/api/test
 ```
 
-### Headers
+### Headers de Autenticação
 ```
 Content-Type: application/json
 Authorization: Bearer {$AUTH_TOKEN}
 ```
 
-### Body para Ping Test
+### 📊 Payload JSON Controlado - Teste de Ping
 ```json
 {
-  "mikrotik_ip": "{$MIKROTIK_IP}",
-  "mikrotik_user": "{$MIKROTIK_USER}",
+  "mikrotik_ip": "{$MIKROTIK_IP}",      # Zabbix define qual dispositivo
+  "mikrotik_user": "{$MIKROTIK_USER}",   # Credenciais gerenciadas pelo Zabbix
   "mikrotik_pass": "{$MIKROTIK_PASSWORD}",
   "mikrotik_port": "{$MIKROTIK_PORT}",
-  "target_ip": "{$TARGET_IP}",
-  "test_type": "ping",
-  "ping_count": "{$PING_COUNT}",
+  "target_ip": "{$TARGET_IP}",           # Zabbix define o alvo
+  "test_type": "ping",                   # Zabbix controla tipo de teste
+  "ping_count": "{$PING_COUNT}",         # Parâmetros controlados
   "ping_timeout": "{$PING_TIMEOUT}"
 }
 ```
 
-### Body para TCP Test
+### 📊 Payload JSON Controlado - Teste TCP
 ```json
 {
   "mikrotik_ip": "{$MIKROTIK_IP}",
@@ -179,18 +237,67 @@ Para implementar descoberta automática de alvos:
 2. Configure uma regra LLD no template do Zabbix.
 3. Defina protótipos de itens, triggers e gráficos.
 
-## Solução de Problemas
+## ⚙️ Configuração Avançada do HTTP Agent
 
-Se encontrar problemas com a configuração do Zabbix:
+### Otimizações para Arquitetura PULL
 
-1. Verifique o log do Zabbix Server: `tail -f /var/log/zabbix/zabbix_server.log`
-2. Verifique os valores e preenchimento correto das macros.
-3. Teste manualmente o endpoint do collector usando curl:
-   ```bash
-   curl -X POST http://collector:8000/run_test \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer seu_token_secreto" \
-     -d '{"mikrotik_ip":"192.168.1.1", "mikrotik_user":"admin", ...}'
-   ```
-4. Verifique o acesso do Zabbix Server/Proxy ao collector (firewall, rede).
-5. Confirme que o collector consegue acessar o MikroTik.
+#### Configuração de Intervalos Inteligentes:
+```
+Item HTTP Agent - Configuração Recomendada:
+- Tipo: HTTP Agent
+- Intervalo: 1m (60s) - maior que TTL do cache (30s)
+- Timeout: 30s - permite tempo suficiente para execução
+- Retry: 3 tentativas automáticas pelo Zabbix
+- Keep alive: Sim - reutiliza conexões TCP
+```
+
+#### Headers Essenciais para Performance:
+```
+Content-Type: application/json
+Authorization: Bearer {$AUTH_TOKEN}
+Connection: keep-alive
+User-Agent: Zabbix-Sentinel-Agent/1.0
+```
+
+#### Configuração de Timeout Escalonado:
+```
+Timeout do HTTP Agent: 30s
+  ├── Timeout de conexão ao collector: 5s
+  ├── Timeout SSH/API para MikroTik: 15s  
+  └── Buffer de processamento: 10s
+```
+
+### 🎯 Estratégias de Cache e TTL
+
+#### Cache Inteligente do Collector:
+```python
+# TTL configurável por tipo de teste
+CACHE_CONFIG = {
+    "ping": 30,      # 30 segundos para ping
+    "tcp": 60,       # 60 segundos para TCP connect
+    "traceroute": 300 # 5 minutos para traceroute
+}
+```
+
+#### Coordenação Zabbix ↔ Cache:
+- **Intervalo Zabbix > TTL Cache**: Garante dados sempre frescos quando necessário
+- **Múltiplos Hosts**: Cache compartilhado otimiza recursos para alvos comuns
+- **Cache Miss Strategy**: Execução imediata + cache para próximas requisições
+
+### 📊 Monitoramento do Próprio Sistema (Meta-Monitoring)
+
+#### Itens de Controle Interno:
+```json
+# Endpoint especial para health check
+POST {$COLLECTOR_URL}/health
+Response: {
+  "status": "healthy",
+  "cache_hits": 1250,
+  "cache_misses": 89,
+  "active_connections": 3,
+  "avg_response_time_ms": 245
+}
+```
+
+#### Itens HTTP Agent para Meta-Monitoring:
+- **Collector Health Status**: Monitor se o collector está responden

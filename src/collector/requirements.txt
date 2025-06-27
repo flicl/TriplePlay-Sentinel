@@ -1,0 +1,32 @@
+# TriplePlay-Sentinel Collector - Dependências Python
+# Sistema de Monitoramento Centralizado MikroTik-Zabbix via HTTP Agent (PULL)
+
+# Framework Web
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Conexão SSH para MikroTik
+paramiko==3.3.1
+
+# Manipulação de dados
+dataclasses-json==0.6.1
+
+# Logging e monitoramento
+structlog==23.2.0
+
+# Utilitários
+python-dotenv==1.0.0
+requests==2.31.0
+
+# Desenvolvimento e testes (opcional)
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0
+
+# Produção
+gunicorn==21.2.0
+gevent==23.9.1
+
+# Segurança
+cryptography==41.0.7

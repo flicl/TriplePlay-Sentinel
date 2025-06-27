@@ -1,352 +1,178 @@
-# Sentinel Collector
+# TriplePlay-Sentinel Collector v2.1.0
 
-O Sentinel Collector é o componente central do sistema Sentinel, atuando como intermediário entre o Zabbix e os roteadores MikroTik para monitoramento de conectividade de rede.
+**🆕 Agora com Redis e arquitetura ultra-simplificada!**
 
-## Funcionalidades
+## 🚀 Quick Start
 
-- Recebe requisições do Zabbix via HTTP/HTTPS
-- Conecta aos dispositivos MikroTik usando SSH/API
-- Executa testes de conectividade (ping, TCP connect, traceroute)
-- Processa e retorna resultados estruturados no formato JSON
-- Oferece um dashboard web para execução manual de testes
-- Suporta criptografia de credenciais sensíveis
-- Implementa sistema de cache para otimizar o desempenho
-- Suporta múltiplas requisições concorrentes
-- Logging detalhado para troubleshooting
-- Mecanismo aprimorado de configuração com fallback
-- Sistema de retry para conexões MikroTik
-- Suporte a CORS para integração com outras aplicações
-
-## Dashboard Web
-
-O coletor inclui um dashboard web completo para execução manual de testes, permitindo:
-
-- Executar testes de ping, TCP connect e traceroute
-- Visualizar resultados em formato amigável
-- Acompanhar histórico dos últimos testes realizados
-- Verificar estatísticas do coletor
-
-Para acessar o dashboard, basta navegar para a URL do coletor (ex: http://localhost:5000/).
-
-## Endpoints da API
-
-### GET /api/health
-Verifica o status de operação do coletor.
-
-**Resposta:**
-```json
-{
-    "status": "operational",
-    "timestamp": "2025-05-10T15:30:00.123456",
-    "version": "1.0.0",
-    "uptime": 3600
-}
-```
-
-### GET /api/version
-Retorna informações de versão do coletor.
-
-**Resposta:**
-```json
-{
-    "name": "Sentinel Collector",
-    "version": "1.0.0",
-    "description": "Componente central do Sistema Sentinel para monitoramento via MikroTik-Zabbix",
-    "author": "TriplePlay Team"
-}
-```
-
-### GET /api/stats
-Retorna estatísticas de uso do coletor.
-
-**Resposta:**
-```json
-{
-    "timestamp": "2025-05-10T15:30:00.123456",
-    "uptime": 3600,
-    "cache": {
-        "enabled": true,
-        "ttl": 300,
-        "size": 5,
-        "items": [
-            {
-                "key": "ping:8.8.8.8:count=3;size=64",
-                "test_type": "ping",
-                "target": "8.8.8.8",
-                "age_seconds": 120,
-                "timestamp": "2025-05-10T15:28:00.123456"
-            }
-        ]
-    }
-}
-```
-
-### POST /api/test
-Executa um teste de conectividade a partir de um dispositivo MikroTik.
-
-**Requisição:**
-```json
-{
-    "mikrotik_host": "192.168.1.1",
-    "mikrotik_user": "admin",                // Opcional se configurado no servidor
-    "mikrotik_password": "password",         // Opcional se configurado no servidor
-    "test_type": "ping",                     // "ping", "tcp" ou "traceroute"
-    "target": "8.8.8.8",
-    "count": 3,                              // Para ping (opcional)
-    "size": 64,                              // Para ping (opcional)
-    "port": 80,                              // Para tcp (opcional)
-    "max_hops": 30,                          // Para traceroute (opcional)
-    "use_cache": true                        // Opcional (padrão: true)
-}
-```
-
-**Resposta para teste de ping:**
-```json
-{
-    "status": "success",
-    "ping_stats": {
-        "sent": 3,
-        "received": 3,
-        "packet_loss": 0,
-        "min_rtt": 10.5,
-        "avg_rtt": 12.3,
-        "max_rtt": 15.7
-    },
-    "metadata": {
-        "timestamp": "2025-05-10T15:30:00.123456",
-        "test_type": "ping",
-        "target": "8.8.8.8",
-        "mikrotik_host": "192.168.1.1"
-    }
-}
-```
-
-**Resposta para teste de conexão TCP:**
-```json
-{
-    "status": "success",
-    "tcp_test": {
-        "reachable": true,
-        "target": "8.8.8.8",
-        "port": 80,
-        "message": "Conexão TCP estabelecida com sucesso"
-    },
-    "metadata": {
-        "timestamp": "2025-05-10T15:30:00.123456",
-        "test_type": "tcp",
-        "target": "8.8.8.8",
-        "mikrotik_host": "192.168.1.1"
-    }
-}
-```
-
-**Resposta para teste de traceroute:**
-```json
-{
-    "status": "success",
-    "traceroute": {
-        "hops": [
-            {
-                "hop": 1,
-                "ip": "192.168.1.1",
-                "unreachable": false,
-                "rtt": 1.5,
-                "rtt_samples": [1.5]
-            },
-            {
-                "hop": 2,
-                "ip": "200.150.100.1",
-                "unreachable": false,
-                "rtt": 15.3,
-                "rtt_samples": [15.3]
-            }
-        ],
-        "hop_count": 2,
-        "target_reached": true
-    },
-    "metadata": {
-        "timestamp": "2025-05-10T15:30:00.123456",
-        "test_type": "traceroute",
-        "target": "8.8.8.8",
-        "mikrotik_host": "192.168.1.1"
-    }
-}
-```
-
-## Configuração
-
-A configuração do coletor pode ser feita através de:
-
-1. Variáveis de ambiente
-2. Arquivo .env no diretório do coletor
-3. Arquivo de configuração JSON (configurável via variável CONFIG_FILE)
-
-Veja o arquivo `.env.example` para todas as opções de configuração disponíveis.
-
-### Configurações Principais
-
-| Variável | Descrição | Padrão |
-|----------|-----------|--------|
-| HOST | Endereço IP para bind do servidor | 0.0.0.0 |
-| PORT | Porta para bind do servidor | 5000 |
-| DEBUG_MODE | Habilita modo de debug | False |
-| MIKROTIK_USER | Usuário padrão para MikroTik | - |
-| MIKROTIK_PASSWORD | Senha padrão para MikroTik | - |
-| MIKROTIK_TIMEOUT | Timeout para conexão com MikroTik (segundos) | 10 |
-| MIKROTIK_RETRY_COUNT | Número de tentativas de reconexão | 2 |
-| CACHE_ENABLED | Habilita cache de resultados | True |
-| CACHE_TTL | Tempo de vida do cache em segundos | 300 |
-| ENABLE_ENCRYPTION | Habilita criptografia de credenciais | False |
-| ENCRYPTION_KEY | Chave para criptografia | - |
-| LOG_LEVEL | Nível de log (DEBUG, INFO, WARNING, ERROR, CRITICAL) | INFO |
-| LOG_FILE | Arquivo de log | logs/collector.log |
-
-### Segurança
-
-Para habilitar HTTPS, configure as seguintes variáveis:
-
-```
-SSL_CERT_PATH=/caminho/para/certificado.pem
-SSL_KEY_PATH=/caminho/para/chave.key
-```
-
-Para habilitar criptografia de credenciais:
-
-```
-ENABLE_ENCRYPTION=True
-ENCRYPTION_KEY=sua_chave_secreta_aqui
-```
-
-## Executando Localmente
-
+### 1. Configuração Básica
 ```bash
-# Criar ambiente virtual (se ainda não existir)
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate  # Windows
+# Clone o projeto
+git clone https://github.com/tripleplay/sentinel.git
+cd TriplePlay-Sentinel
+
+# Configure o ambiente
+cp .env.example .env
+# Edite o .env conforme necessário
+```
+
+### 2. Deploy Simples (Apenas Collector)
+```bash
+# Build e start básico
+docker-compose up -d
+
+# Verificar logs
+docker-compose logs -f sentinel-collector
+
+# Verificar status
+curl http://localhost:5000/api/health
+```
+
+### 3. Deploy Docker (Recomendado) ⭐
+```bash
+# Use o docker-compose unificado
+docker-compose up -d
+
+# Verificar status dos serviços
+docker-compose ps
+
+# Acesse:
+# - Collector API: http://localhost:5000
+# - Dashboard: http://localhost:5000/dashboard
+```
+
+### 4. Deploy Manual (Desenvolvimento)
+```bash
+cd src/collector
 
 # Instalar dependências
 pip install -r requirements.txt
 
-# Configurar variáveis de ambiente
-cp .env.example .env
-nano .env
+# Configurar variáveis
+export COLLECTOR_HOST=0.0.0.0
+export COLLECTOR_PORT=5000
 
-# Executar o collector
-python collector.py
+# Executar
+python app.py
 ```
 
-## Executando com Docker
+## 🧪 Testando o Collector
 
+### Health Check
 ```bash
-# Construir e iniciar o container
-docker build -t sentinel-collector .
-docker run -p 5000:5000 -v $(pwd)/.env:/app/.env sentinel-collector
-```
-
-Com Docker Compose:
-
-```bash
-docker-compose up -d
-```
-
-## Testando o Collector
-
-Use o script de teste fornecido:
-
-```bash
-python ../scripts/test_collector.py --mikrotik 192.168.88.1 --user admin --password sua_senha --target 8.8.8.8
-```
-
-Ou use curl para testes manuais:
-
-```bash
-# Verificar saúde
 curl http://localhost:5000/api/health
-
-# Executar teste de ping
-curl -X POST http://localhost:5000/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"mikrotik_host":"192.168.88.1","mikrotik_user":"admin","mikrotik_password":"password","test_type":"ping","target":"8.8.8.8","count":3}'
-
-# Executar teste de traceroute
-curl -X POST http://localhost:5000/api/test \
-  -H "Content-Type: application/json" \
-  -d '{"mikrotik_host":"192.168.88.1","mikrotik_user":"admin","mikrotik_password":"password","test_type":"traceroute","target":"8.8.8.8","max_hops":30}'
 ```
 
-## Sistema de Configuração Avançado
-
-O Sentinel Collector agora conta com um sistema de configuração robusto que suporta:
-
-1. **Configuração em camadas**: 
-   - Variáveis de ambiente (maior prioridade)
-   - Arquivos de configuração JSON (média prioridade)
-   - Valores padrão (menor prioridade)
-
-2. **`ConfigManager`**: Uma classe com funcionalidades avançadas
-   - Acesso a configurações aninhadas (notação com pontos)
-   - Validação automática de configurações
-   - Criptografia de dados sensíveis
-
-3. **`config_helper.py`**: Um módulo de compatibilidade que:
-   - Tenta usar o `ConfigManager` avançado quando disponível
-   - Inclui um fallback para configuração simples via variáveis de ambiente
-   - Garante que a aplicação funcione mesmo sem o sistema avançado
-
-### Uso do ConfigManager
-
-Em código Python, use o ConfigManager assim:
-
-```python
-# Importar o config_helper que gerencia o fallback
-from config_helper import config
-
-# Acessar uma configuração com valor padrão
-timeout = config.get('server.timeout', 5)
-
-# Acessar um nível de log formatado para o logging
-log_level = config.get_log_level()
-
-# Obter todas as configurações do servidor
-server_config = config.get_server_settings()
+### Teste de Ping
+```bash
+curl -X POST http://localhost:5000/api/test \
+  -H "Content-Type: application/json" \
+  -d '{
+    "mikrotik_host": "192.168.1.1",
+    "mikrotik_user": "admin",
+    "mikrotik_password": "senha",
+    "test_type": "ping",
+    "target": "8.8.8.8",
+    "count": 4
+  }'
 ```
 
-### Arquivo de Configuração
+### Script de Teste Automático
+```bash
+# Configure as credenciais no script
+python test_collector.py
+```
 
-Para usar um arquivo de configuração, crie um JSON com a estrutura:
+## 📊 API Endpoints
 
+### GET /api/health
+Verifica se o collector está funcionando.
+
+**Resposta:**
 ```json
 {
-  "server": {
-    "host": "0.0.0.0",
-    "port": 5000,
-    "debug": false,
-    "timeout": 5,
-    "ssl_cert": "",
-    "ssl_key": ""
-  },
-  "security": {
-    "enable_encryption": false,
-    "encryption_key": "",
-    "salt": ""
-  },
-  "mikrotik": {
-    "default_user": "admin",
-    "default_password": "password",
-    "connection_timeout": 10,
-    "retry_count": 2
-  },
-  "cache": {
-    "enabled": true,
-    "ttl": 300
-  },
-  "logging": {
-    "level": "INFO",
-    "file": "logs/collector.log"
-  }
+  "status": "healthy",
+  "timestamp": "2025-06-22T10:30:00.123456",
+  "version": "1.0.0",
+  "cache_entries": 5
 }
 ```
 
-Salve como `config/config.json` para uso automatizado.
+### POST /api/test
+Executa testes de conectividade.
+
+**Parâmetros obrigatórios:**
+- `mikrotik_host`: IP do MikroTik
+- `mikrotik_user`: Usuário SSH
+- `mikrotik_password`: Senha SSH
+- `test_type`: Tipo de teste (`ping`, `tcp_connect`, `traceroute`)
+- `target`: IP/hostname de destino
+
+**Parâmetros opcionais (ping):**
+- `count`: Número de pacotes (padrão: 4)
+- `size`: Tamanho do pacote (padrão: 64)
+- `interval`: Intervalo entre pacotes (padrão: 1)
+
+### GET /api/cache
+Visualiza status do cache.
+
+### DELETE /api/cache
+Limpa o cache.
+
+## 🔧 Configuração
+
+### Variáveis de Ambiente
+
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `COLLECTOR_HOST` | `0.0.0.0` | IP para bind do servidor |
+| `COLLECTOR_PORT` | `5000` | Porta do servidor |
+| `CACHE_TTL` | `30` | TTL do cache em segundos |
+| `SSH_TIMEOUT` | `30` | Timeout SSH em segundos |
+| `COMMAND_TIMEOUT` | `60` | Timeout de comandos |
+| `MAX_WORKERS` | `10` | Pool de workers |
+| `REQUIRE_AUTH` | `False` | Requer autenticação |
+| `API_KEY` | `""` | Chave da API |
+
+## 🐳 Docker
+
+### Build da Imagem
+```bash
+cd src/collector
+docker build -t tripleplay-sentinel-collector .
+```
+
+### Run Manual
+```bash
+docker run -d \
+  --name sentinel-collector \
+  -p 5000:5000 \
+  -e COLLECTOR_HOST=0.0.0.0 \
+  -e CACHE_TTL=30 \
+  tripleplay-sentinel-collector
+```
+
+## 🔍 Troubleshooting
+
+### Logs
+```bash
+# Docker
+docker-compose logs -f sentinel-collector
+
+# Manual
+tail -f /var/log/sentinel-collector.log
+```
+
+### Problemas Comuns
+
+1. **Erro de conexão SSH**
+   - Verifique credenciais MikroTik
+   - Confirme que SSH está habilitado
+   - Teste conectividade de rede
+
+2. **Cache não funciona**
+   - Verifique logs de cache
+   - Clear cache: `curl -X DELETE http://localhost:5000/api/cache`
+
+3. **Timeout nos comandos**
+   - Aumente `SSH_TIMEOUT` e `COMMAND_TIMEOUT`
+   - Verifique latência de rede para MikroTik

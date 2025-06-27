@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriplePlay-Sentinel Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-metric {
+            border-left: 4px solid #007bff;
+        }
+        .card-metric.success {
+            border-left-color: #28a745;
+        }
+        .card-metric.warning {
+            border-left-color: #ffc107;
+        }
+        .card-metric.danger {
+            border-left-color: #dc3545;
+        }
+        .test-result {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="fas fa-shield-alt"></i>
+                TriplePlay-Sentinel Dashboard
+            </span>
+            <span class="navbar-text">
+                <span id="status-indicator" class="badge bg-success">
+                    <i class="fas fa-check-circle"></i> Online
+                </span>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <!-- Status Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card card-metric">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Uptime</h6>
+                                <h4 id="uptime">--</h4>
+                            </div>
+                            <div class="text-primary">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-metric success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Requisições Totais</h6>
+                                <h4 id="total-requests">--</h4>
+                            </div>
+                            <div class="text-success">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-metric warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Cache Hits</h6>
+                                <h4 id="cache-hits">--</h4>
+                            </div>
+                            <div class="text-warning">
+                                <i class="fas fa-memory fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-metric danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Conexões SSH</h6>
+                                <h4 id="ssh-connections">--</h4>
+                            </div>
+                            <div class="text-danger">
+                                <i class="fas fa-network-wired fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Test Panel -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-play-circle"></i> Executar Teste</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="test-form">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="mikrotik-host" class="form-label">MikroTik Host</label>
+                                        <input type="text" class="form-control" id="mikrotik-host" placeholder="192.168.1.1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="test-type" class="form-label">Tipo de Teste</label>
+                                        <select class="form-select" id="test-type" required>
+                                            <option value="ping">Ping ICMP</option>
+                                            <option value="traceroute">Traceroute</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="mikrotik-user" class="form-label">Usuário SSH</label>
+                                        <input type="text" class="form-control" id="mikrotik-user" placeholder="admin" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="mikrotik-password" class="form-label">Senha SSH</label>
+                                        <input type="password" class="form-control" id="mikrotik-password" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="mikrotik-port" class="form-label">Porta SSH</label>
+                                        <input type="number" class="form-control" id="mikrotik-port" value="22" min="1" max="65535" placeholder="22">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="target" class="form-label">Alvo do Teste</label>
+                                        <input type="text" class="form-control" id="target" placeholder="8.8.8.8" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="run-test-btn">
+                                <i class="fas fa-play"></i> Executar Teste
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Panel -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-bar"></i> Estatísticas Detalhadas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="detailed-stats">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                                <p class="mt-2">Carregando estatísticas...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-list"></i> Resultados dos Testes</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearResults()">
+                            <i class="fas fa-trash"></i> Limpar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="test-results">
+                            <p class="text-muted text-center">Nenhum teste executado ainda.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

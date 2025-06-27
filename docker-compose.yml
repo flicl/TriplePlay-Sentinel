@@ -1,32 +1,142 @@
+# 🐳 TriplePlay-Sentinel - Docker Compose
+# Sistema de Monitoramento MikroTik com Redis para cache de alta performance
+
 version: '3.8'
 
 services:
-  collector:
+  # =================================================================
+  # CORE SERVICES
+  # =================================================================
+  
+  # TriplePlay-Sentinel Collector
+  sentinel-collector:
     build:
-      context: .
+      context: ./src/collector
       dockerfile: Dockerfile
-    image: tripleplay/sentinel-collector:latest
-    container_name: sentinel-collector
+    container_name: tripleplay-sentinel-collector
+    hostname: sentinel-collector
     restart: unless-stopped
+    
     ports:
       - "5000:5000"
-    volumes:
-      - ./src/collector/.env:/app/.env
-      - ./logs:/app/logs
-      - ./config:/app/config
-      - ./src/collector/templates:/app/templates
-      - ./src/collector/static:/app/static
+    
     environment:
-      - TZ=America/Sao_Paulo
+      # Configurações básicas
+      COLLECTOR_HOST: 0.0.0.0
+      COLLECTOR_PORT: 5000
+      LOG_LEVEL: INFO
+      
+      # Redis Cache
+      REDIS_ENABLED: true
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      CACHE_TTL: 30
+      
+      # SSH/MikroTik
+      SSH_TIMEOUT: 30
+      SSH_MAX_RETRIES: 3
+      
+      # Performance
+      MAX_WORKERS: 10
+      REQUEST_TIMEOUT: 60
+      
+      # Segurança
+      ENABLE_AUTH: ${ENABLE_AUTH:-false}
+      API_KEY: ${API_KEY:-}
+      
+    volumes:
+      - sentinel_logs:/app/logs
+      - ./src/collector/.env:/app/.env:ro
+    
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+    
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
-    networks:
-      - sentinel-network
+      start_period: 30s
+    
+    labels:
+      - "com.tripleplay.service=sentinel-collector"
+      - "com.tripleplay.version=2.1.0"
 
+  # =================================================================
+  # CACHE
+  # =================================================================
+  
+  # Redis para cache distribuído
+  redis:
+    image: redis:7-alpine
+    container_name: tripleplay-redis
+    hostname: redis
+    restart: unless-stopped
+    
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    
+    command: >
+      redis-server 
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    
+    volumes:
+      - redis_data:/data
+    
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    
+    labels:
+      - "com.tripleplay.service=redis-cache"
+
+# =================================================================
+# VOLUMES
+# =================================================================
+volumes:
+  # Cache Redis
+  redis_data:
+    driver: local
+  
+  # Logs
+  sentinel_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logs
+
+# =================================================================
+# NETWORKS
+# =================================================================
 networks:
-  sentinel-network:
+  default:
+    name: tripleplay-sentinel
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
