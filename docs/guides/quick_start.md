@@ -53,21 +53,21 @@ git --version
 | Source | Destination | Port | Protocol | Purpose |
 |--------|-------------|------|----------|---------|
 | **Zabbix Server** | Collector | 5000 | HTTP | API calls |
-| **Collector** | MikroTik | 22 | SSH | Device commands |
+| **Collector** | MikroTik | 8728 | API | Device commands |
 | **Collector** | Redis | 6379 | TCP | Cache operations |
 | **Admin** | Collector | 5000 | HTTP | Dashboard access |
 
 ### 🛡️ MikroTik Prerequisites
 
 ```mikrotik
-# Enable SSH service
-/ip service set ssh disabled=no port=22
+# Enable API service
+/ip service set api disabled=no port=8728
 
-# Create monitoring user
-/user add name=sentinel-monitor password=SecurePassword123 group=read
+# Create monitoring user with API access
+/user add name=sentinel-monitor password=SecurePassword123 group=full
 
-# Optional: Restrict SSH access to monitoring server
-/ip service set ssh address=your-zabbix-server-ip
+# Optional: Restrict API access to monitoring server
+/ip service set api address=your-zabbix-server-ip
 ```
 
 ---
@@ -112,7 +112,7 @@ REDIS_PASSWORD=
 
 # Performance Tuning
 MAX_WORKERS=10
-SSH_TIMEOUT=30
+API_TIMEOUT=30
 ```
 
 #### Step 3: Deploy System
@@ -197,9 +197,9 @@ REDIS_ENABLED=true               # Enable Redis cache
 REDIS_HOST=redis                 # Redis hostname
 CACHE_TTL=30                     # Cache TTL in seconds
 
-# SSH Settings
-SSH_TIMEOUT=30                   # SSH connection timeout
-SSH_MAX_RETRIES=3               # Retry attempts
+# API Settings
+API_TIMEOUT=30                   # API connection timeout
+API_MAX_RETRIES=3               # Retry attempts
 
 # Performance
 MAX_WORKERS=10                   # Concurrent workers

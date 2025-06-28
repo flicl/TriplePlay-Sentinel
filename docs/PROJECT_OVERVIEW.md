@@ -314,7 +314,7 @@ HTTP Agent PULL:
 ### **Backend**
 - **Python 3.11+** - Linguagem principal
 - **Flask** - Framework web para API REST
-- **Paramiko** - Biblioteca SSH para conexão com MikroTiks
+- **librouteros** - Biblioteca para API MikroTik nativa
 - **Flask-CORS** - Suporte a CORS para integração web
 
 ### **Infraestrutura**

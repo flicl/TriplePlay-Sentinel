@@ -28,7 +28,7 @@ from flask_cors import CORS
 from config import config
 from models import TestResult, TestParameters, SystemStats
 from cache import cache
-from mikrotik import mikrotik
+from mikrotik_connector import MikroTikConnector
 from processor import processor
 
 # Configuração de logging
@@ -41,6 +41,9 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger('sentinel-collector')
+
+# Inicialização do conector MikroTik
+mikrotik = MikroTikConnector()
 
 # Inicialização do Flask
 app = Flask(__name__)

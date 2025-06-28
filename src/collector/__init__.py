@@ -26,7 +26,7 @@ __email__ = "support@tripleplay.com"
 from .config import config
 from .models import TestResult, TestParameters, SystemStats
 from .cache import cache
-from .mikrotik import mikrotik
+from .mikrotik_connector import MikroTikConnector
 from .processor import processor
 
 __all__ = [
@@ -35,6 +35,6 @@ __all__ = [
     'TestParameters', 
     'SystemStats',
     'cache',
-    'mikrotik',
+    'MikroTikConnector',
     'processor'
 ]

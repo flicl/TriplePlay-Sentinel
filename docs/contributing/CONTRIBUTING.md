@@ -170,7 +170,7 @@ import sys
 from typing import Dict, List, Optional
 
 import redis
-import paramiko
+from librouteros import connect
 from flask import Flask, request, jsonify
 
 from .models import TestResult
@@ -267,10 +267,10 @@ MIKROTIK_MAX_RETRIES=3
 # File naming: test_*.py
 
 import pytest
-from src.collector.mikrotik import MikroTikConnector
+from src.collector.mikrotik_connector import MikroTikConnector
 
 def test_connection_validation():
-    """Test SSH connection parameter validation."""
+    """Test API connection parameter validation."""
     connector = MikroTikConnector()
     
     # Test valid parameters

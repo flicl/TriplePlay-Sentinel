@@ -27,12 +27,12 @@ O Sentinel é um sistema de monitoramento centralizado que integra dispositivos 
 - **Resposta sob Demanda**: Atende apenas requisições HTTP do Zabbix
 - Recebe requisições controladas do Zabbix via HTTP(S) Agent
 - Implementa cache inteligente com TTL de 30 segundos para eficiência
-- Conecta aos dispositivos MikroTik via API ou SSH conforme solicitado
+- Conecta aos dispositivos MikroTik via API nativa do RouterOS
 - Executa comandos remotamente nos dispositivos sob controle do Zabbix
 - Processa os resultados e retorna dados estruturados em JSON
 - **Auto-regulação**: Evita sobrecarga através de cache e validação
 - Instalado diretamente no servidor Zabbix ou em um container Docker
-- Implementado em Python utilizando Flask e Paramiko
+- Implementado em Python utilizando Flask e librouteros
 - Endpoints RESTful otimizados para integração com HTTP Agent
 - Processamento assíncrono de múltiplas requisições simultâneas
 - Validação rigorosa de dados e tratamento inteligente de erros
@@ -40,7 +40,7 @@ O Sentinel é um sistema de monitoramento centralizado que integra dispositivos 
 ### 3. Dispositivos MikroTik (RouterOS)
 
 - Executam os testes de conectividade (ping, TCP connect, etc.)
-- Comunicam-se com o collector via API ou SSH
+- Comunicam-se com o collector via API nativa do RouterOS
 - Não necessitam de scripts ou configurações especiais
 
 ### 4. Configuração/Credenciais

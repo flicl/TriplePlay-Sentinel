@@ -1,1607 +1,267 @@
 zabbix_export:
   version: '6.0'
-  date: '2025-06-22T10:00:00Z'
+  date: '2025-06-28T12:00:00Z'
   groups:
-    - uuid: 846977d1-7c3e-4b3f-9c7e-d4c8b6a9f0e1
-      name: 'TriplePlay-Sentinel'
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: 'Templates/Network devices'
   templates:
-    - uuid: a1b2c3d4-e5f6-7890-abcd-ef1234567890
-      template: 'TriplePlay-Sentinel Monitoring'
-      name: 'TriplePlay-Sentinel Network Monitoring'
+    - uuid: c5c91b9e8c5b4a4fb8f6d9a8e7c4b3d2
+      template: 'TriplePlay-Sentinel v2.0 API-Only'
+      name: 'TriplePlay-Sentinel v2.0 API-Only'
       description: |
-        Template para monitoramento de conectividade de rede usando TriplePlay-Sentinel Collector
+        Template for monitoring network devices through TriplePlay-Sentinel API-only architecture.
         
-        Características:
-        - Monitoramento de ping ICMP com estatísticas detalhadas
-        - Traceroute para análise de rotas de rede
-        - Cache inteligente para otimização de performance
-        - Métricas de latência, jitter e disponibilidade
+        Features:
+        - 100% MikroTik API integration (no SSH)
+        - High-performance parallel ping tests
+        - Batch command execution
+        - Connection pooling and caching
+        - Real-time system statistics
         
-        Versão: 2.0.0
-        Compatibilidade: Zabbix 6.0+
-        Autor: TriplePlay Team
+        Requirements:
+        - TriplePlay-Sentinel v2.0.0+
+        - MikroTik with API enabled (port 8728/8729)
+        - Zabbix 6.0+
+        
+        Author: TriplePlay-Sentinel Team
+        License: MIT
       groups:
-        - name: 'TriplePlay-Sentinel'
+        - name: 'Templates/Network devices'
       items:
-        # =========================================
-        # PING MONITORING ITEMS
-        # =========================================
-        - uuid: ping-loss-dns1-uuid-001
-          name: 'Ping Packet Loss % to DNS1'
+        - uuid: a1b2c3d4e5f6789012345678901234567
+          name: 'API Health Check'
           type: HTTP_AGENT
-          key: 'tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: '%'
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS1}",
-              "count": 4,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.packet_loss_percent'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '100'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: target
-              value: dns1
-
-        - uuid: ping-rtt-avg-dns1-uuid-002
-          name: 'Ping Average RTT to DNS1'
-          type: HTTP_AGENT
-          key: 'tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: ms
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS1}",
-              "count": 4,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.avg_time_ms'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: metric
-              value: latency
-
-        - uuid: ping-jitter-dns1-uuid-003
-          name: 'Ping Jitter to DNS1'
-          type: HTTP_AGENT
-          key: 'tripleplay.ping.jitter[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: ms
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS1}",
-              "count": 4,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.jitter_ms'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: metric
-              value: jitter
-
-        - uuid: ping-availability-dns1-uuid-004
-          name: 'Ping Availability % to DNS1'
-          type: HTTP_AGENT
-          key: 'tripleplay.ping.availability[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: '%'
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS1}",
-              "count": 4,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.availability_percent'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: metric
-              value: availability
-
-        # =========================================
-        # PING MONITORING ITEMS - DNS2
-        # =========================================
-        - uuid: ping-loss-dns2-uuid-005
-          name: 'Ping Packet Loss % to DNS2'
-          type: HTTP_AGENT
-          key: 'tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS2}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: '%'
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS2}",
-              "count": 4,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.packet_loss_percent'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '100'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: target
-              value: dns2
-
-        - uuid: ping-rtt-avg-dns2-uuid-006
-          name: 'Ping Average RTT to DNS2'
-          type: HTTP_AGENT
-          key: 'tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS2}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: ms
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS2}",
-              "count": 4,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.avg_time_ms'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: metric
-              value: latency
-
-        # =========================================
-        # CACHE MONITORING ITEMS
-        # =========================================
-        - uuid: cache-hit-uuid-010
-          name: 'Cache Hit Indicator'
-          type: HTTP_AGENT
-          key: 'tripleplay.cache.hit[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: UNSIGNED
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS1}",
-              "count": 4
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.cache_hit'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-            - type: BOOL_TO_DECIMAL
-              parameters: []
-          tags:
-            - tag: component
-              value: cache
-            - tag: metric
-              value: hit_indicator
-
-        # =========================================
-        # TRACEROUTE MONITORING ITEMS
-        # =========================================
-        - uuid: traceroute-hops-dns1-uuid-014
-          name: 'Traceroute Hops Count to DNS1'
-          type: HTTP_AGENT
-          key: 'tripleplay.traceroute.hops[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: UNSIGNED
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "mikrotik_port": {$MIKROTIK_PORT},
-              "test_type": "traceroute",
-              "target": "{$TARGET_DNS1}"
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.traceroute_stats.hop_count'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: traceroute
-            - tag: target
-              value: dns1
-
-        - uuid: traceroute-reached-target-dns1-uuid-015
-          name: 'Traceroute Reached Target DNS1'
-          type: HTTP_AGENT
-          key: 'tripleplay.traceroute.reached[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: UNSIGNED
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "mikrotik_port": {$MIKROTIK_PORT},
-              "test_type": "traceroute",
-              "target": "{$TARGET_DNS1}"
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.traceroute_stats.reached_target'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-            - type: BOOL_TO_DECIMAL
-              parameters: []
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: traceroute
-            - tag: metric
-              value: reachability
-
-        # =========================================
-        # ADVANCED NETWORK QUALITY ITEMS
-        # =========================================
-        - uuid: network-quality-score-uuid-016
-          name: 'Network Quality Score'
-          type: CALCULATED
-          key: 'tripleplay.network.quality_score'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: ''
-          params: |
-            # Calcula um score de qualidade baseado em múltiplas métricas
-            # Score = 100 - (packet_loss * 2) - (latency/10) - (jitter/5)
-            max(0, 100 - 
-              (last("//tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}]") * 2) - 
-              (last("//tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}]") / 10) - 
-              (last("//tripleplay.ping.jitter[{$MIKROTIK_HOST},{$TARGET_DNS1}]") / 5)
-            )
-          tags:
-            - tag: component
-              value: network
-            - tag: metric
-              value: quality_score
-
-        - uuid: ping-success-rate-uuid-017
-          name: 'Ping Success Rate to DNS1'
-          type: HTTP_AGENT
-          key: 'tripleplay.ping.success_rate[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: '%'
-          url: '{$COLLECTOR_URL}/api/test'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-              "test_type": "ping",
-              "target": "{$TARGET_DNS1}",
-              "count": 10,
-              "size": 64,
-              "interval": 1
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.results.ping_stats.success_rate_percent'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: network
-            - tag: test_type
-              value: ping
-            - tag: metric
-              value: success_rate
-
-        # =========================================
-        # MIKROTIK DEVICE MONITORING
-        # =========================================
-        - uuid: mikrotik-connection-status-uuid-018
-          name: 'MikroTik Connection Status'
-          type: HTTP_AGENT
-          key: 'tripleplay.mikrotik.connection_status'
-          history: 7d
-          trends: 90d
-          value_type: UNSIGNED
-          url: '{$COLLECTOR_URL}/api/health/mikrotik'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}"
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.connection_successful'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-            - type: BOOL_TO_DECIMAL
-              parameters: []
-          tags:
-            - tag: component
-              value: mikrotik
-            - tag: metric
-              value: connection_status
-
-        - uuid: mikrotik-response-time-uuid-019
-          name: 'MikroTik SSH Response Time'
-          type: HTTP_AGENT
-          key: 'tripleplay.mikrotik.response_time'
-          history: 7d
-          trends: 90d
-          value_type: FLOAT
-          units: ms
-          url: '{$COLLECTOR_URL}/api/health/mikrotik'
-          request_method: POST
-          post_type: JSON
-          posts: |
-            {
-              "mikrotik_host": "{$MIKROTIK_HOST}",
-              "mikrotik_user": "{$MIKROTIK_USER}",
-              "mikrotik_password": "{$MIKROTIK_PASSWORD}"
-            }
-          headers:
-            - name: Content-Type
-              value: application/json
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
-              parameters:
-                - '$.response_time_ms'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: mikrotik
-            - tag: metric
-              value: response_time
-
-        # =========================================
-        # COLLECTOR HEALTH MONITORING
-        # =========================================
-        - uuid: collector-health-uuid-011
-          name: 'Collector Health Status'
-          type: HTTP_AGENT
-          key: 'tripleplay.collector.health'
-          history: 7d
-          trends: 90d
-          value_type: CHAR
-          url: '{$COLLECTOR_URL}/api/health'
-          request_method: GET
-          timeout: '{$COLLECTOR_TIMEOUT}'
+          key: tripleplay.api.health
+          delay: 30s
+          timeout: 10s
+          url: '{$COLLECTOR_URL}/health'
+          retrieve_mode: JSON
+          value_type: TEXT
+          description: 'Check if TriplePlay-Sentinel API is responding'
           preprocessing:
             - type: JSONPATH
               parameters:
                 - '$.status'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: 'unhealthy'
           tags:
             - tag: component
-              value: collector
-            - tag: metric
-              value: health
-
-        - uuid: collector-uptime-uuid-012
-          name: 'Collector Uptime'
+              value: api
+        - uuid: b2c3d4e5f6789012345678901234567a
+          name: 'API Response Time'
           type: HTTP_AGENT
-          key: 'tripleplay.collector.uptime'
-          history: 7d
-          trends: 90d
+          key: tripleplay.api.response_time
+          delay: 60s
+          timeout: 10s
+          url: '{$COLLECTOR_URL}/api/v2/stats'
+          retrieve_mode: JSON
           value_type: FLOAT
           units: s
-          url: '{$COLLECTOR_URL}/api/health'
-          request_method: GET
-          timeout: '{$COLLECTOR_TIMEOUT}'
+          description: 'Average API response time'
           preprocessing:
             - type: JSONPATH
               parameters:
-                - '$.uptime_seconds'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
+                - '$.application.avg_response_time_seconds'
           tags:
             - tag: component
-              value: collector
-            - tag: metric
-              value: uptime
-
-        - uuid: collector-cache-hit-rate-uuid-013
-          name: 'Collector Cache Hit Rate'
+              value: performance
+        - uuid: c3d4e5f6789012345678901234567ab2
+          name: 'Connection Pool Size'
           type: HTTP_AGENT
-          key: 'tripleplay.collector.cache_hit_rate'
-          history: 7d
-          trends: 90d
+          key: tripleplay.pool.size
+          delay: 60s
+          timeout: 10s
+          url: '{$COLLECTOR_URL}/api/v2/stats'
+          retrieve_mode: JSON
+          value_type: UNSIGNED
+          description: 'MikroTik connection pool size'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.mikrotik_connector.pool_size'
+          tags:
+            - tag: component
+              value: connection
+        - uuid: d4e5f6789012345678901234567ab2c3
+          name: 'Cache Hit Rate'
+          type: HTTP_AGENT
+          key: tripleplay.cache.hit_rate
+          delay: 60s
+          timeout: 10s
+          url: '{$COLLECTOR_URL}/api/v2/stats'
+          retrieve_mode: JSON
           value_type: FLOAT
           units: '%'
-          url: '{$COLLECTOR_URL}/api/health'
-          request_method: GET
-          timeout: '{$COLLECTOR_TIMEOUT}'
+          description: 'Cache hit rate percentage'
           preprocessing:
             - type: JSONPATH
               parameters:
-                - '$.cache.hit_rate_percent'
-              error_handler: CUSTOM_VALUE
-              error_handler_params: '0'
-          tags:
-            - tag: component
-              value: collector
-            - tag: metric
-              value: cache_hit_rate
-
-      discovery_rules:
-        # =========================================
-        # DISCOVERY RULE FOR NETWORK TARGETS
-        # =========================================
-        - uuid: discovery-network-targets-uuid-001
-          name: 'Network Targets Discovery'
-          type: HTTP_AGENT
-          key: 'tripleplay.discovery.targets'
-          lifetime: 7d
-          description: |
-            Descobre automaticamente alvos de rede configurados
-            no TriplePlay-Sentinel Collector
-          url: '{$COLLECTOR_URL}/api/discovery/targets'
-          request_method: GET
-          timeout: '{$COLLECTOR_TIMEOUT}'
-          preprocessing:
-            - type: JSONPATH
+                - '$.mikrotik_connector.cache_hits'
+            - type: JAVASCRIPT
               parameters:
-                - '$.targets'
-          item_prototypes:
-            - uuid: discovery-ping-loss-uuid-001
-              name: 'Ping Packet Loss % to {#TARGET_NAME} ({#TARGET_IP})'
-              type: HTTP_AGENT
-              key: 'tripleplay.ping.loss[{$MIKROTIK_HOST},{#TARGET_IP}]'
-              history: 7d
-              trends: 90d
-              value_type: FLOAT
-              units: '%'
-              url: '{$COLLECTOR_URL}/api/test'
-              request_method: POST
-              post_type: JSON
-              posts: |
-                {
-                  "mikrotik_host": "{$MIKROTIK_HOST}",
-                  "mikrotik_user": "{$MIKROTIK_USER}",
-                  "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-                  "test_type": "ping",
-                  "target": "{#TARGET_IP}",
-                  "count": 4,
-                  "size": 64,
-                  "interval": 1
-                }
-              headers:
-                - name: Content-Type
-                  value: application/json
-              timeout: '{$COLLECTOR_TIMEOUT}'
-              preprocessing:
-                - type: JSONPATH
-                  parameters:
-                    - '$.results.ping_stats.packet_loss_percent'
-                  error_handler: CUSTOM_VALUE
-                  error_handler_params: '100'
-              tags:
-                - tag: component
-                  value: network
-                - tag: test_type
-                  value: ping
-                - tag: target
-                  value: '{#TARGET_NAME}'
-
-            - uuid: discovery-ping-rtt-uuid-002
-              name: 'Ping Average RTT to {#TARGET_NAME} ({#TARGET_IP})'
-              type: HTTP_AGENT
-              key: 'tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{#TARGET_IP}]'
-              history: 7d
-              trends: 90d
-              value_type: FLOAT
-              units: ms
-              url: '{$COLLECTOR_URL}/api/test'
-              request_method: POST
-              post_type: JSON
-              posts: |
-                {
-                  "mikrotik_host": "{$MIKROTIK_HOST}",
-                  "mikrotik_user": "{$MIKROTIK_USER}",
-                  "mikrotik_password": "{$MIKROTIK_PASSWORD}",
-                  "test_type": "ping",
-                  "target": "{#TARGET_IP}",
-                  "count": 4,
-                  "size": 64,
-                  "interval": 1
-                }
-              headers:
-                - name: Content-Type
-                  value: application/json
-              timeout: '{$COLLECTOR_TIMEOUT}'
-              preprocessing:
-                - type: JSONPATH
-                  parameters:
-                    - '$.results.ping_stats.avg_time_ms'
-                  error_handler: CUSTOM_VALUE
-                  error_handler_params: '0'
-              tags:
-                - tag: component
-                  value: network
-                - tag: test_type
-                  value: ping
-                - tag: metric
-                  value: latency
-
-          trigger_prototypes:
-            - uuid: discovery-trigger-loss-uuid-001
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{#TARGET_IP}])=100'
-              name: 'Ping: Total packet loss to {#TARGET_NAME} ({#TARGET_IP})'
-              priority: DISASTER
-              description: |
-                Perda total de pacotes detectada para {#TARGET_NAME} ({#TARGET_IP}).
-                
-                Isso indica que o destino está completamente inacessível.
-                Verifique conectividade de rede e status do destino.
-              manual_close: 'YES'
-              tags:
-                - tag: scope
-                  value: availability
-                - tag: component
-                  value: network
-
-            - uuid: discovery-trigger-high-loss-uuid-002
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{#TARGET_IP}])>={$PING_LOSS_HIGH}'
-              name: 'Ping: High packet loss to {#TARGET_NAME} (>={$PING_LOSS_HIGH}%)'
-              priority: HIGH
-              description: |
-                Alta perda de pacotes detectada para {#TARGET_NAME} ({#TARGET_IP}).
-                
-                Valor atual: {ITEM.LASTVALUE}%
-                Threshold: {$PING_LOSS_HIGH}%
-              dependencies:
-                - name: 'Ping: Total packet loss to {#TARGET_NAME} ({#TARGET_IP})'
-                  expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{#TARGET_IP}])=100'
-              tags:
-                - tag: scope
-                  value: performance
-                - tag: component
-                  value: network
-
-            - uuid: discovery-trigger-high-latency-uuid-003
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{#TARGET_IP}])>={$PING_RTT_HIGH}'
-              name: 'Ping: High latency to {#TARGET_NAME} (>={$PING_RTT_HIGH}ms)'
-              priority: HIGH
-              description: |
-                Alta latência detectada para {#TARGET_NAME} ({#TARGET_IP}).
-                
-                Valor atual: {ITEM.LASTVALUE}ms
-                Threshold: {$PING_RTT_HIGH}ms
-              tags:
-                - tag: scope
-                  value: performance
-                - tag: component
-                  value: network
-
-          graph_prototypes:
-            - uuid: discovery-graph-ping-performance-uuid-001
-              name: 'Network Performance - {#TARGET_NAME}'
-              width: 900
-              height: 200
-              ymin_type: FIXED
-              ymin_item_1: 0
-              graph_items:
-                - sortorder: 0
-                  drawtype: LINE
-                  color: '1A7C11'
-                  item:
-                    host: 'TriplePlay-Sentinel Monitoring'
-                    key: 'tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{#TARGET_IP}]'
-                - sortorder: 1
-                  drawtype: LINE
-                  color: 'F63100'
-                  yaxisside: RIGHT
-                  item:
-                    host: 'TriplePlay-Sentinel Monitoring'
-                    key: 'tripleplay.ping.loss[{$MIKROTIK_HOST},{#TARGET_IP}]'
-
-      triggers:
-        # =========================================
-        # PING TRIGGERS - CRITICAL
-        # =========================================
-        - uuid: trigger-ping-total-loss-uuid-001
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}])=100'
-          name: 'Ping: Total packet loss to {$TARGET_DNS1}'
-          priority: DISASTER
-          description: |
-            Perda total de pacotes detectada para {$TARGET_DNS1}.
-            
-            Isso indica que o destino está completamente inacessível.
-            Verifique conectividade de rede e status do destino.
-          manual_close: 'YES'
+                - |
+                  var hits = JSON.parse(value);
+                  var total = JSON.parse('{$CACHE_TOTAL}') || 1;
+                  return (hits / total * 100).toFixed(2);
           tags:
-            - tag: scope
-              value: availability
-            - tag: component
-              value: network
-
-        - uuid: trigger-ping-high-loss-uuid-002
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}])>={$PING_LOSS_HIGH}'
-          name: 'Ping: High packet loss to {$TARGET_DNS1} (>={$PING_LOSS_HIGH}%)'
-          priority: HIGH
-          description: |
-            Alta perda de pacotes detectada para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE}%
-            Threshold: {$PING_LOSS_HIGH}%
-            
-            Possíveis causas:
-            - Congestionamento de rede
-            - Problemas de roteamento
-            - Degradação do link
-          dependencies:
-            - name: 'Ping: Total packet loss to {$TARGET_DNS1}'
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}])=100'
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: network
-
-        - uuid: trigger-ping-moderate-loss-uuid-003
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}])>={$PING_LOSS_WARN} and last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}])<{$PING_LOSS_HIGH}'
-          name: 'Ping: Moderate packet loss to {$TARGET_DNS1} (>={$PING_LOSS_WARN}%)'
-          priority: AVERAGE
-          description: |
-            Perda moderada de pacotes detectada para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE}%
-            Warning threshold: {$PING_LOSS_WARN}%
-          dependencies:
-            - name: 'Ping: High packet loss to {$TARGET_DNS1} (>={$PING_LOSS_HIGH}%)'
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}])>={$PING_LOSS_HIGH}'
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: network
-
-        # =========================================
-        # LATENCY TRIGGERS
-        # =========================================
-        - uuid: trigger-ping-high-latency-uuid-004
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}])>={$PING_RTT_HIGH}'
-          name: 'Ping: High latency to {$TARGET_DNS1} (>={$PING_RTT_HIGH}ms)'
-          priority: HIGH
-          description: |
-            Alta latência detectada para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE}ms
-            Threshold: {$PING_RTT_HIGH}ms
-            
-            Impacto:
-            - Degradação da qualidade de serviço
-            - Possível impacto em aplicações críticas
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: network
-
-        - uuid: trigger-ping-moderate-latency-uuid-005
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}])>={$PING_RTT_WARN} and last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}])<{$PING_RTT_HIGH}'
-          name: 'Ping: Moderate latency to {$TARGET_DNS1} (>={$PING_RTT_WARN}ms)'
-          priority: AVERAGE
-          description: |
-            Latência moderada detectada para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE}ms
-            Warning threshold: {$PING_RTT_WARN}ms
-          dependencies:
-            - name: 'Ping: High latency to {$TARGET_DNS1} (>={$PING_RTT_HIGH}ms)'
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}])>={$PING_RTT_HIGH}'
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: network
-
-        # =========================================
-        # TRACEROUTE TRIGGERS
-        # =========================================
-        - uuid: trigger-traceroute-excessive-hops-uuid-011
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.traceroute.hops[{$MIKROTIK_HOST},{$TARGET_DNS1}])>{$TRACEROUTE_HOPS_MAX}'
-          name: 'Traceroute: Excessive hops to {$TARGET_DNS1} (>{$TRACEROUTE_HOPS_MAX})'
-          priority: WARNING
-          description: |
-            Número excessivo de hops detectado no traceroute para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE} hops
-            Máximo esperado: {$TRACEROUTE_HOPS_MAX} hops
-            
-            Pode indicar:
-            - Roteamento ineficiente
-            - Loops de roteamento
-            - Problemas na tabela de roteamento
-          tags:
-            - tag: scope
-              value: routing
-            - tag: component
-              value: network
-
-        - uuid: trigger-traceroute-slow-uuid-012
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.traceroute.time[{$MIKROTIK_HOST},{$TARGET_DNS1}])>{$TRACEROUTE_TIME_WARN}'
-          name: 'Traceroute: Slow route to {$TARGET_DNS1} (>{$TRACEROUTE_TIME_WARN}ms)'
-          priority: WARNING
-          description: |
-            Tempo total de traceroute elevado para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE}ms
-            Threshold: {$TRACEROUTE_TIME_WARN}ms
-            
-            Pode indicar problemas na rota de rede.
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: network
-
-        # =========================================
-        # NETWORK QUALITY TRIGGERS
-        # =========================================
-        - uuid: trigger-network-quality-poor-uuid-013
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.network.quality_score)<{$NETWORK_QUALITY_MIN}'
-          name: 'Network: Poor quality score (<{$NETWORK_QUALITY_MIN})'
-          priority: AVERAGE
-          description: |
-            Score de qualidade da rede está baixo.
-            
-            Valor atual: {ITEM.LASTVALUE}
-            Mínimo esperado: {$NETWORK_QUALITY_MIN}
-            
-            O score é calculado baseado em:
-            - Perda de pacotes
-            - Latência
-            - Jitter
-            
-            Verifique métricas individuais para identificar o problema.
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: network
-
-        - uuid: trigger-ping-low-success-rate-uuid-014
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.ping.success_rate[{$MIKROTIK_HOST},{$TARGET_DNS1}])<{$PING_SUCCESS_RATE_MIN}'
-          name: 'Ping: Low success rate to {$TARGET_DNS1} (<{$PING_SUCCESS_RATE_MIN}%)'
-          priority: HIGH
-          description: |
-            Taxa de sucesso de ping baixa para {$TARGET_DNS1}.
-            
-            Valor atual: {ITEM.LASTVALUE}%
-            Mínimo esperado: {$PING_SUCCESS_RATE_MIN}%
-            
-            Indica problemas intermitentes de conectividade.
-          tags:
-            - tag: scope
-              value: availability
-            - tag: component
-              value: network
-
-        # =========================================
-        # MIKROTIK TRIGGERS
-        # =========================================
-        - uuid: trigger-mikrotik-connection-failed-uuid-015
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.mikrotik.connection_status)=0'
-          name: 'MikroTik: SSH connection failed'
-          priority: DISASTER
-          description: |
-            Conexão SSH com o dispositivo MikroTik falhou.
-            
-            Possíveis causas:
-            - Dispositivo MikroTik indisponível
-            - Credenciais SSH incorretas
-            - Serviço SSH desabilitado
-            - Problemas de rede entre collector e MikroTik
-            - Firewall bloqueando conexão SSH
-            
-            CRÍTICO: Sem conexão com MikroTik, nenhum teste pode ser executado!
-          manual_close: 'YES'
-          tags:
-            - tag: scope
-              value: availability
-            - tag: component
-              value: mikrotik
-
-        - uuid: trigger-mikrotik-slow-response-uuid-016
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.mikrotik.response_time)>{$MIKROTIK_RESPONSE_TIME_WARN}'
-          name: 'MikroTik: Slow SSH response (>{$MIKROTIK_RESPONSE_TIME_WARN}ms)'
-          priority: WARNING
-          description: |
-            Tempo de resposta SSH do MikroTik está elevado.
-            
-            Valor atual: {ITEM.LASTVALUE}ms
-            Threshold: {$MIKROTIK_RESPONSE_TIME_WARN}ms
-            
-            Pode indicar:
-            - MikroTik sobrecarregado
-            - Latência de rede elevada
-            - Processamento lento no dispositivo
-          dependencies:
-            - name: 'MikroTik: SSH connection failed'
-              expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.mikrotik.connection_status)=0'
-          tags:
-            - tag: scope
-              value: performance
-            - tag: component
-              value: mikrotik
-
-        # =========================================
-        # COLLECTOR TRIGGERS
-        # =========================================
-        - uuid: trigger-collector-unhealthy-uuid-009
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.collector.health)<>"healthy"'
-          name: 'TriplePlay Collector: Service unhealthy'
-          priority: DISASTER
-          description: |
-            TriplePlay-Sentinel Collector está com problemas de saúde.
-            
-            Status atual: {ITEM.LASTVALUE}
-            
-            Ações necessárias:
-            - Verificar logs do collector
-            - Verificar conectividade
-            - Reiniciar serviço se necessário
-          tags:
-            - tag: scope
-              value: availability
-            - tag: component
-              value: collector
-
-        - uuid: trigger-collector-cache-low-hit-rate-uuid-010
-          expression: 'last(/TriplePlay-Sentinel Monitoring/tripleplay.collector.cache_hit_rate)<{$CACHE_HIT_RATE_MIN}'
-          name: 'TriplePlay Collector: Low cache hit rate (<{$CACHE_HIT_RATE_MIN}%)'
-          priority: WARNING
-          description: |
-            Taxa de acerto do cache está baixa.
-            
-            Valor atual: {ITEM.LASTVALUE}%
-            Mínimo esperado: {$CACHE_HIT_RATE_MIN}%
-            
-            Possíveis causas:
-            - TTL do cache muito baixo
-            - Muitos testes únicos
-            - Cache sendo limpo frequentemente
-          tags:
-            - tag: scope
-              value: performance
             - tag: component
               value: cache
-
-      graphs:
-        # =========================================
-        # PING PERFORMANCE GRAPHS
-        # =========================================
-        - uuid: graph-dns1-performance-uuid-001
-          name: 'Network Performance - DNS1 ({$TARGET_DNS1})'
-          width: 900
-          height: 200
-          show_legend: 1
-          show_work_period: 1
-          show_triggers: 1
-          type: NORMAL
-          ymin_type: FIXED
-          ymin_item_1: 0
-          graph_items:
-            - sortorder: 0
-              drawtype: LINE
-              color: '1A7C11'
-              calc_fnc: ALL
-              type: SIMPLE
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-            - sortorder: 1
-              drawtype: LINE
-              color: 'F63100'
-              calc_fnc: ALL
-              type: SIMPLE
-              yaxisside: RIGHT
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-            - sortorder: 2
-              drawtype: LINE
-              color: 'FFAA00'
-              calc_fnc: ALL
-              type: SIMPLE
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.jitter[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-
-        - uuid: graph-dns2-performance-uuid-002
-          name: 'Network Performance - DNS2 ({$TARGET_DNS2})'
-          width: 900
-          height: 200
-          show_legend: 1
-          show_work_period: 1
-          show_triggers: 1
-          type: NORMAL
-          ymin_type: FIXED
-          ymin_item_1: 0
-          graph_items:
-            - sortorder: 0
-              drawtype: LINE
-              color: '1A7C11'
-              calc_fnc: ALL
-              type: SIMPLE
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.rtt_avg[{$MIKROTIK_HOST},{$TARGET_DNS2}]'
-            - sortorder: 1
-              drawtype: LINE
-              color: 'F63100'
-              calc_fnc: ALL
-              type: SIMPLE
-              yaxisside: RIGHT
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.loss[{$MIKROTIK_HOST},{$TARGET_DNS2}]'
-
-        # =========================================
-        # COLLECTOR HEALTH GRAPHS
-        # =========================================
-        - uuid: graph-collector-performance-uuid-005
-          name: 'TriplePlay Collector Performance'
-          width: 900
-          height: 200
-          show_legend: 1
-          show_work_period: 1
-          show_triggers: 1
-          type: NORMAL
-          ymin_type: FIXED
-          ymin_item_1: 0
-          graph_items:
-            - sortorder: 0
-              drawtype: LINE
-              color: '1A7C11'
-              calc_fnc: ALL
-              type: SIMPLE
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.collector.cache_hit_rate'
-            - sortorder: 1
-              drawtype: LINE
-              color: '2774A4'
-              calc_fnc: ALL
-              type: SIMPLE
-              yaxisside: RIGHT
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.collector.uptime'
-
-        # =========================================
-        # AVAILABILITY OVERVIEW GRAPH
-        # =========================================
-        - uuid: graph-availability-overview-uuid-006
-          name: 'Network Availability Overview'
-          width: 900
-          height: 200
-          show_legend: 1
-          show_work_period: 1
-          show_triggers: 1
-          type: NORMAL
-          ymin_type: FIXED
-          ymin_item_1: 0
-          ymax_type: FIXED
-          ymax_item_1: 100
-          graph_items:
-            - sortorder: 0
-              drawtype: LINE
-              color: '1A7C11'
-              calc_fnc: ALL
-              type: SIMPLE
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.availability[{$MIKROTIK_HOST},{$TARGET_DNS1}]'
-            - sortorder: 1
-              drawtype: LINE
-              color: '2774A4'
-              calc_fnc: ALL
-              type: SIMPLE
-              item:
-                host: 'TriplePlay-Sentinel Monitoring'
-                key: 'tripleplay.ping.availability[{$MIKROTIK_HOST},{$TARGET_DNS2}]'
-
+        - uuid: e5f6789012345678901234567ab2c3d4
+          name: 'MikroTik Connection Test'
+          type: HTTP_AGENT
+          key: tripleplay.mikrotik.connection
+          delay: 120s
+          timeout: 30s
+          url: '{$COLLECTOR_URL}/api/v2/test-connection'
+          retrieve_mode: JSON
+          value_type: TEXT
+          posts: |
+            {
+              "host": "{$MIKROTIK_HOST}",
+              "username": "{$MIKROTIK_USER}",
+              "password": "{$MIKROTIK_PASS}"
+            }
+          headers:
+            - name: Content-Type
+              value: application/json
+            - name: X-API-Key
+              value: '{$API_KEY}'
+          description: 'Test MikroTik API connection'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.status'
+          tags:
+            - tag: component
+              value: mikrotik
+        - uuid: f6789012345678901234567ab2c3d4e5
+          name: 'Network Ping Test (8.8.8.8)'
+          type: HTTP_AGENT
+          key: tripleplay.ping.google_dns
+          delay: 300s
+          timeout: 30s
+          url: '{$COLLECTOR_URL}/api/v2/mikrotik/ping'
+          retrieve_mode: JSON
+          value_type: FLOAT
+          units: ms
+          posts: |
+            {
+              "host": "{$MIKROTIK_HOST}",
+              "username": "{$MIKROTIK_USER}",
+              "password": "{$MIKROTIK_PASS}",
+              "targets": ["8.8.8.8"],
+              "count": 4,
+              "use_cache": true
+            }
+          headers:
+            - name: Content-Type
+              value: application/json
+            - name: X-API-Key
+              value: '{$API_KEY}'
+          description: 'Ping test to Google DNS via MikroTik API'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$["ping_results"]["8.8.8.8"]["ping_stats"]["avg_time_ms"]'
+          tags:
+            - tag: component
+              value: network
+            - tag: target
+              value: 8.8.8.8
+      discovery_rules:
+        - uuid: 789012345678901234567ab2c3d4e5f6
+          name: 'Network Targets Discovery'
+          type: HTTP_AGENT
+          key: tripleplay.targets.discovery
+          delay: 3600s
+          timeout: 30s
+          url: '{$COLLECTOR_URL}/api/v2/stats'
+          retrieve_mode: JSON
+          description: 'Discover network monitoring targets'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.configuration'
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var config = JSON.parse(value);
+                  var targets = [
+                    {"target": "8.8.8.8", "name": "Google DNS"},
+                    {"target": "1.1.1.1", "name": "Cloudflare DNS"},
+                    {"target": "8.8.4.4", "name": "Google DNS Alt"}
+                  ];
+                  return JSON.stringify(targets);
+          item_prototypes:
+            - uuid: 89012345678901234567ab2c3d4e5f67
+              name: 'Ping Response Time [{#TARGET}]'
+              type: HTTP_AGENT
+              key: 'tripleplay.ping[{#TARGET}]'
+              delay: 300s
+              timeout: 30s
+              url: '{$COLLECTOR_URL}/api/v2/mikrotik/ping'
+              retrieve_mode: JSON
+              value_type: FLOAT
+              units: ms
+              posts: |
+                {
+                  "host": "{$MIKROTIK_HOST}",
+                  "username": "{$MIKROTIK_USER}",
+                  "password": "{$MIKROTIK_PASS}",
+                  "targets": ["{#TARGET}"],
+                  "count": 4,
+                  "use_cache": true
+                }
+              headers:
+                - name: Content-Type
+                  value: application/json
+                - name: X-API-Key
+                  value: '{$API_KEY}'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$["ping_results"]["{#TARGET}"]["ping_stats"]["avg_time_ms"]'
+              tags:
+                - tag: component
+                  value: network
+                - tag: target
+                  value: '{#TARGET}'
+          trigger_prototypes:
+            - uuid: 9012345678901234567ab2c3d4e5f678
+              expression: 'last(/TriplePlay-Sentinel v2.0 API-Only/tripleplay.ping[{#TARGET}])>1000'
+              name: 'High ping response time to {#TARGET}'
+              priority: WARNING
+              description: 'Ping response time to {#TARGET} is over 1000ms'
+      triggers:
+        - uuid: 012345678901234567ab2c3d4e5f6789
+          expression: 'find(/TriplePlay-Sentinel v2.0 API-Only/tripleplay.api.health,,"eq","ok")=0'
+          name: 'TriplePlay-Sentinel API is down'
+          priority: HIGH
+          description: 'TriplePlay-Sentinel API is not responding'
+        - uuid: 123456789012345678ab2c3d4e5f6789
+          expression: 'last(/TriplePlay-Sentinel v2.0 API-Only/tripleplay.mikrotik.connection)<>"success"'
+          name: 'MikroTik connection failed'
+          priority: HIGH
+          description: 'Cannot connect to MikroTik device via API'
+        - uuid: 23456789012345678ab2c3d4e5f67890
+          expression: 'last(/TriplePlay-Sentinel v2.0 API-Only/tripleplay.api.response_time)>2'
+          name: 'High API response time'
+          priority: WARNING
+          description: 'API response time is over 2 seconds'
       macros:
-        # =========================================
-        # COLLECTOR CONFIGURATION
-        # =========================================
         - macro: '{$COLLECTOR_URL}'
           value: 'http://localhost:5000'
-          description: 'URL base do TriplePlay-Sentinel Collector'
-
-        - macro: '{$COLLECTOR_TIMEOUT}'
-          value: '30s'
-          description: 'Timeout para requisições ao collector'
-
-        # =========================================
-        # MIKROTIK CONFIGURATION
-        # =========================================
+          description: 'TriplePlay-Sentinel API base URL'
         - macro: '{$MIKROTIK_HOST}'
           value: '192.168.1.1'
-          description: 'Endereço IP do dispositivo MikroTik'
-
+          description: 'MikroTik device IP address'
         - macro: '{$MIKROTIK_USER}'
           value: 'admin'
-          description: 'Usuário SSH do MikroTik'
-
-        - macro: '{$MIKROTIK_PASSWORD}'
+          description: 'MikroTik username'
+        - macro: '{$MIKROTIK_PASS}'
           value: 'password'
-          description: 'Senha SSH do MikroTik'
-
-        - macro: '{$MIKROTIK_PORT}'
-          value: '22'
-          description: 'Porta SSH do MikroTik'
-
-        # =========================================
-        # TEST TARGETS
-        # =========================================
-        - macro: '{$TARGET_DNS1}'
-          value: '8.8.8.8'
-          description: 'Primeiro servidor DNS para testes (Google DNS)'
-
-        - macro: '{$TARGET_DNS2}'
-          value: '1.1.1.1'
-          description: 'Segundo servidor DNS para testes (Cloudflare DNS)'
-
-        - macro: '{$TARGET_GATEWAY}'
-          value: '192.168.1.1'
-          description: 'Gateway padrão para testes'
-
-        # =========================================
-        # PING THRESHOLDS
-        # =========================================
-        - macro: '{$PING_LOSS_WARN}'
-          value: '10'
-          description: 'Threshold de aviso para perda de pacotes (%)'
-
-        - macro: '{$PING_LOSS_HIGH}'
-          value: '25'
-          description: 'Threshold crítico para perda de pacotes (%)'
-
-        - macro: '{$PING_RTT_WARN}'
+          description: 'MikroTik password'
+        - macro: '{$API_KEY}'
+          value: ''
+          description: 'Optional API key for authentication'
+        - macro: '{$CACHE_TOTAL}'
           value: '100'
-          description: 'Threshold de aviso para latência (ms)'
-
-        - macro: '{$PING_RTT_HIGH}'
-          value: '200'
-          description: 'Threshold crítico para latência (ms)'
-
-        - macro: '{$PING_JITTER_WARN}'
-          value: '50'
-          description: 'Threshold de aviso para jitter (ms)'
-
-        - macro: '{$PING_JITTER_HIGH}'
-          value: '100'
-          description: 'Threshold crítico para jitter (ms)'
-
-        # =========================================
-        # CACHE THRESHOLDS
-        # =========================================
-        - macro: '{$CACHE_HIT_RATE_MIN}'
-          value: '70'
-          description: 'Taxa mínima esperada de acerto do cache (%)'
-
-        # =========================================
-        # TRACEROUTE THRESHOLDS
-        # =========================================
-        - macro: '{$TRACEROUTE_HOPS_MAX}'
-          value: '15'
-          description: 'Número máximo de hops aceito no traceroute'
-
-        - macro: '{$TRACEROUTE_TIME_WARN}'
-          value: '5000'
-          description: 'Threshold de aviso para tempo total de traceroute (ms)'
-
-        # =========================================
-        # NETWORK QUALITY THRESHOLDS
-        # =========================================
-        - macro: '{$NETWORK_QUALITY_MIN}'
-          value: '70'
-          description: 'Score mínimo de qualidade da rede'
-
-        - macro: '{$PING_SUCCESS_RATE_MIN}'
-          value: '95'
-          description: 'Taxa mínima de sucesso de ping (%)'
-
-        # =========================================
-        # MIKROTIK THRESHOLDS
-        # =========================================
-        - macro: '{$MIKROTIK_RESPONSE_TIME_WARN}'
-          value: '3000'
-          description: 'Threshold de aviso para tempo de resposta SSH do MikroTik (ms)'
-
-        # =========================================
-        # ADVANCED NETWORK THRESHOLDS
-        # =========================================
-        - macro: '{$PING_PACKET_SIZE}'
-          value: '64'
-          description: 'Tamanho do pacote ping em bytes'
-
-        - macro: '{$PING_COUNT_STANDARD}'
-          value: '4'
-          description: 'Número padrão de pings para testes rápidos'
-
-        - macro: '{$PING_COUNT_EXTENDED}'
-          value: '10'
-          description: 'Número de pings para testes estendidos'
-
-        - macro: '{$PING_INTERVAL}'
-          value: '1'
-          description: 'Intervalo entre pings em segundos'
-
-        # =========================================
-        # COLLECTOR THRESHOLDS
-        # =========================================
-        - macro: '{$COLLECTOR_UPTIME_MIN}'
-          value: '300'
-          description: 'Tempo mínimo de uptime antes de alertar (s)'
-
-      dashboards:
-        # =========================================
-        # MAIN DASHBOARD
-        # =========================================
-        - uuid: dashboard-tripleplay-main-uuid-001
-          name: 'TriplePlay-Sentinel Network Monitoring'
-          display_period: 60
-          auto_start: 1
-          pages:
-            - uuid: dashboard-page-main-uuid-001
-              name: 'Network Overview'
-              display_period: 60
-              widgets:
-                # Network Status Widget
-                - type: PLAIN_TEXT
-                  name: 'Network Status Summary'
-                  x: 0
-                  y: 0
-                  width: 12
-                  height: 4
-                  fields:
-                    - type: INTEGER
-                      name: show_lines
-                      value: 4
-                    - type: STRING
-                      name: content
-                      value: |
-                        ⚡ TriplePlay-Sentinel Network Monitoring Dashboard
-                        
-                        📊 Última atualização: {HOST.CONN}
-                        🔧 Collector: {ITEM.LASTVALUE:tripleplay.collector.health}
-                        📈 Cache Hit Rate: {ITEM.LASTVALUE:tripleplay.collector.cache_hit_rate}%
-                        ⏱️ Uptime: {ITEM.LASTVALUE:tripleplay.collector.uptime}s
-
-                # DNS1 Performance Graph
-                - type: GRAPH
-                  name: 'DNS1 Performance - {$TARGET_DNS1}'
-                  x: 0
-                  y: 4
-                  width: 12
-                  height: 5
-                  fields:
-                    - type: GRAPH
-                      name: graphid
-                      value:
-                        name: 'Network Performance - DNS1 ({$TARGET_DNS1})'
-                        host: 'TriplePlay-Sentinel Monitoring'
-
-                # DNS2 Performance Graph
-                - type: GRAPH
-                  name: 'DNS2 Performance - {$TARGET_DNS2}'
-                  x: 0
-                  y: 9
-                  width: 12
-                  height: 5
-                  fields:
-                    - type: GRAPH
-                      name: graphid
-                      value:
-                        name: 'Network Performance - DNS2 ({$TARGET_DNS2})'
-                        host: 'TriplePlay-Sentinel Monitoring'
-
-                # Collector Performance
-                - type: GRAPH
-                  name: 'Collector Performance'
-                  x: 0
-                  y: 14
-                  width: 12
-                  height: 4
-                  fields:
-                    - type: GRAPH
-                      name: graphid
-                      value:
-                        name: 'TriplePlay Collector Performance'
-                        host: 'TriplePlay-Sentinel Monitoring'
-
-                # Network Availability Table
-                - type: ITEM
-                  name: 'Network Metrics'
-                  x: 0
-                  y: 18
-                  width: 12
-                  height: 6
-                  fields:
-                    - type: INTEGER
-                      name: columns
-                      value: 4
-                    - type: INTEGER
-                      name: rows
-                      value: 6
-                    - type: ITEM
-                      name: itemids
-                      value:
-                        - name: 'Ping Packet Loss % to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Average RTT to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Jitter to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Availability % to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Packet Loss % to DNS2'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Average RTT to DNS2'
-                          host: 'TriplePlay-Sentinel Monitoring'
-
-            # Second Page - Historical Data
-            - uuid: dashboard-page-history-uuid-002
-              name: 'Historical Analysis'
-              display_period: 3600
-              widgets:
-                # Historical Performance Widget
-                - type: PLAIN_TEXT
-                  name: 'Historical Analysis'
-                  x: 0
-                  y: 0
-                  width: 12
-                  height: 3
-                  fields:
-                    - type: STRING
-                      name: content
-                      value: |
-                        📈 Análise Histórica da Rede - Últimas 24 horas
-                        
-                        Esta página apresenta dados históricos para análise de tendências e padrões de comportamento da rede.
-
-                # Long-term Availability Graph
-                - type: GRAPH
-                  name: 'Network Availability - 24h'
-                  x: 0
-                  y: 3
-                  width: 12
-                  height: 6
-                  fields:
-                    - type: GRAPH
-                      name: graphid
-                      value:
-                        name: 'Network Availability Overview'
-                        host: 'TriplePlay-Sentinel Monitoring'
-
-
-
-            # Third Page - Alerts & Problems
-            - uuid: dashboard-page-problems-uuid-003
-              name: 'Problems & Alerts'
-              display_period: 300
-              widgets:
-                # Problems Widget
-                - type: PROBLEMS
-                  name: 'Active Network Problems'
-                  x: 0
-                  y: 0
-                  width: 12
-                  height: 8
-                  fields:
-                    - type: INTEGER
-                      name: show_tags
-                      value: 1
-                    - type: INTEGER
-                      name: show_timeline
-                      value: 1
-                    - type: STRING
-                      name: problem_display
-                      value: 'all'
-                    - type: STRING
-                      name: severities
-                      value: '0,1,2,3,4,5'
-                    - type: STRING
-                      name: evaltype
-                      value: '0'
-                    - type: STRING
-                      name: tags
-                      value: 'component:network'
-
-                # Recent Events
-                - type: PROBLEMS
-                  name: 'Recent Network Events'
-                  x: 0
-                  y: 8
-                  width: 12
-                  height: 8
-                  fields:
-                    - type: INTEGER
-                      name: show_tags
-                      value: 1
-                    - type: INTEGER
-                      name: show_timeline
-                      value: 1
-                    - type: STRING
-                      name: problem_display
-                      value: 'recent'
-                    - type: INTEGER
-                      name: show_suppressed
-                      value: 0
-
-        # =========================================
-        # TECHNICAL DASHBOARD
-        # =========================================
-        - uuid: dashboard-tripleplay-tech-uuid-002
-          name: 'TriplePlay-Sentinel Technical Dashboard'
-          display_period: 30
-          auto_start: 1
-          pages:
-            - uuid: dashboard-tech-page-main-uuid-001
-              name: 'Technical Metrics'
-              display_period: 30
-              widgets:
-                # Collector Health
-                - type: ITEM
-                  name: 'Collector Health Status'
-                  x: 0
-                  y: 0
-                  width: 6
-                  height: 4
-                  fields:
-                    - type: ITEM
-                      name: itemids
-                      value:
-                        - name: 'Collector Health Status'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Collector Uptime'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Collector Cache Hit Rate'
-                          host: 'TriplePlay-Sentinel Monitoring'
-
-                # Cache Performance
-                - type: ITEM
-                  name: 'Cache Performance'
-                  x: 6
-                  y: 0
-                  width: 6
-                  height: 4
-                  fields:
-                    - type: ITEM
-                      name: itemids
-                      value:
-                        - name: 'Cache Hit Indicator'
-                          host: 'TriplePlay-Sentinel Monitoring'
-
-                # Detailed Network Metrics
-                - type: ITEM
-                  name: 'Detailed Network Metrics'
-                  x: 0
-                  y: 4
-                  width: 12
-                  height: 8
-                  fields:
-                    - type: INTEGER
-                      name: columns
-                      value: 6
-                    - type: ITEM
-                      name: itemids
-                      value:
-                        - name: 'Ping Packet Loss % to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Average RTT to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Jitter to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Availability % to DNS1'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Packet Loss % to DNS2'
-                          host: 'TriplePlay-Sentinel Monitoring'
-                        - name: 'Ping Average RTT to DNS2'
-                          host: 'TriplePlay-Sentinel Monitoring'
-
-# =================================================================
-# TEMPLATE VERSION INFORMATION
-# =================================================================
-# Template Name: TriplePlay-Sentinel Network Monitoring
-# Version: 2.1.0
-# Last Updated: 2025-06-23
-# 
-# CLEANUP SUMMARY (v2.1.0):
-# - Removed all TCP monitoring items (not implemented in collector)
-# - Removed TCP Services Status widget from dashboard
-# - Removed TCP Connection Time graph
-# - Cleaned up orphaned references to TCP functionality
-# - Optimized template size and improved clarity
-# 
-# ACTIVE FEATURES:
-# - ICMP Ping monitoring (loss, RTT, jitter, availability)
-# - Traceroute monitoring (hop count, reachability)
-# - Network Quality Score calculation
-# - Collector health monitoring
-# - Cache performance metrics
-# - MikroTik connection status
-# 
-# COMPATIBILITY:
-# - Zabbix: 6.0+
-# - Collector: TriplePlay-Sentinel v2.0.0+
-# - MikroTik: RouterOS 6.0+
-# 
-# MAINTAINER: TriplePlay Team
-# DOCUMENTATION: See docs/zabbix/ for detailed configuration
-# =================================================================
+          description: 'Cache total requests for hit rate calculation'

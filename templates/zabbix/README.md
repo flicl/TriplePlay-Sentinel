@@ -1,33 +1,149 @@
-# TriplePlay-Sentinel Zabbix Template 6.0
+# TriplePlay-Sentinel Zabbix Integration
 
-**Versão:** 2.1.0 | **Status:** ✅ Production Ready | **Última Atualização:** 28/06/2025
+**Version:** 2.0.0 | **Architecture:** API-Only | **Zabbix:** 6.0+
 
-## 📋 Visão Geral
+## 📋 Overview
 
-Este template foi desenvolvido especificamente para o Zabbix 6.0+ e oferece monitoramento completo de rede através do TriplePlay-Sentinel Collector. O template utiliza HTTP Agent items para comunicação com a API REST do collector.
+Modern Zabbix template for TriplePlay-Sentinel API-only architecture. Uses HTTP Agent items to communicate with the REST API for high-performance network monitoring through MikroTik devices.
 
-**🧹 TEMPLATE LIMPO E OTIMIZADO (v2.1.0)** - Todas as referências a funcionalidades TCP não implementadas foram removidas para maior clareza, performance e confiabilidade.
+## 🚀 Key Features
 
-## 🚀 Características Principais
+### **API-Only Monitoring**
+- ✅ **Parallel Ping Tests** - High-performance ICMP monitoring
+- ✅ **Batch Command Execution** - Multiple targets simultaneously  
+- ✅ **Connection Health** - API connectivity and performance
+- ✅ **System Statistics** - Real-time metrics and cache performance
+- ✅ **Auto-Discovery** - Dynamic target discovery
 
-### Monitoramento de Conectividade ✅
-- **Ping ICMP**: Latência, jitter, perda de pacotes e disponibilidade
-- **Traceroute**: Análise de rotas de rede e número de hops
-- **Cache Intelligence**: Métricas de performance do cache
+### **Performance Optimized**
+- ✅ **librouteros** - Native MikroTik API integration
+- ✅ **Connection Pooling** - Efficient resource management
+- ✅ **Intelligent Caching** - Configurable TTL
+- ✅ **Async Operations** - Non-blocking I/O
 
-### Monitoramento do Collector ✅
-- **Health Check**: Status do collector e tempo de uptime
-- **Performance**: Taxa de acerto do cache e métricas de performance
-- **MikroTik Connection**: Status da conexão SSH com dispositivos MikroTik
+## 📦 Quick Setup
 
-### Discovery Rules ✅
-- **Network Targets Discovery**: Descoberta automática de alvos de rede
-- **Dynamic Item Creation**: Criação automática de itens para novos alvos
+### 1. **Import Template**
+```bash
+# Import the template in Zabbix
+Administration → General → Import → Choose file: tripleplay-sentinel-template.yml
+```
 
-### Funcionalidades Removidas ❌
-- **Testes TCP**: Removidos completamente (não implementados no collector)
-- **HTTP/HTTPS Monitoring**: Não suportado pela arquitetura atual
-- **Port Connectivity**: Template focado apenas em ping/traceroute
+### 2. **Configure Macros**
+Set these macros on your host or template:
+
+| Macro | Default | Description |
+|-------|---------|-------------|
+| `{$COLLECTOR_URL}` | `http://localhost:5000` | TriplePlay-Sentinel API URL |
+| `{$MIKROTIK_HOST}` | `192.168.1.1` | MikroTik device IP |
+| `{$MIKROTIK_USER}` | `admin` | MikroTik username |
+| `{$MIKROTIK_PASS}` | `password` | MikroTik password |
+| `{$API_KEY}` | *(optional)* | API authentication key |
+
+### 3. **Create Host**
+```bash
+## 🔧 Monitored Items
+
+### **System Health**
+- API Response Time
+- Connection Pool Status  
+- Cache Hit Rate
+- Active Connections
+- Request Success Rate
+
+### **Network Tests**
+- Ping Latency (multiple targets)
+- Packet Loss Percentage
+- Jitter Measurements
+- Availability Status
+
+### **Performance Metrics**
+- Concurrent Request Handling
+- Batch Processing Efficiency
+- Memory Usage
+- Error Rates
+
+## 📊 Triggers & Alerts
+
+### **Critical**
+- API service unavailable
+- MikroTik connection failed
+- High packet loss (>50%)
+
+### **Warning**
+- High response time (>1000ms)
+- Cache miss rate high (>80%)
+- Connection pool exhaustion
+
+### **Information**
+- Service restarted
+- Configuration changed
+- Performance threshold reached
+
+## 🔍 Discovery Rules
+
+### **Network Targets Discovery**
+Automatically discovers and monitors configured network targets:
+- Creates items for each target
+- Sets up triggers for availability
+- Configures performance baselines
+
+## 🛠️ Troubleshooting
+
+### **Common Issues**
+
+1. **API Not Responding**
+   - Verify TriplePlay-Sentinel is running
+   - Check `{$COLLECTOR_URL}` macro
+   - Test: `curl http://your-collector:5000/health`
+
+2. **MikroTik Connection Failed**
+   - Verify API is enabled: `/ip service enable api`
+   - Check credentials in macros
+   - Test connectivity to port 8728/8729
+
+3. **No Data Collection**
+   - Check Zabbix proxy/server connectivity
+   - Verify HTTP Agent is enabled
+   - Review item configuration
+
+### **Debug Commands**
+```bash
+# Test API directly
+curl http://localhost:5000/api/v2/stats
+
+# Test MikroTik connection
+curl -X POST http://localhost:5000/api/v2/test-connection \
+  -H "Content-Type: application/json" \
+  -d '{"host":"192.168.1.1","username":"admin","password":"password"}'
+```
+
+## 📋 Requirements
+
+- **Zabbix Server:** 6.0 or higher
+- **TriplePlay-Sentinel:** v2.0.0+ (API-only)
+- **MikroTik Device:** API enabled (port 8728/8729)
+- **Network Access:** Zabbix → TriplePlay-Sentinel → MikroTik
+
+## 🔄 Migration from v1.x
+
+If upgrading from SSH-based templates:
+
+1. **Update TriplePlay-Sentinel** to v2.0.0+
+2. **Enable MikroTik API** (`/ip service enable api`)
+3. **Import new template** (this will replace old items)
+4. **Update macros** (remove SSH-related, add API settings)
+5. **Test connectivity** using new API endpoints
+
+## 📚 Additional Resources
+
+- **API Documentation**: [Project README](../../README.md)
+- **Client Examples**: [sentinel_client.py](../../src/collector/sentinel_client.py)
+- **Docker Deployment**: [Docker Guide](../../docs/guides/docker_run_manual.md)
+
+---
+
+**Professional network monitoring with TriplePlay-Sentinel API-only architecture**
 
 ### Monitoramento do Collector
 - **Health Check**: Status do collector e tempo de uptime
