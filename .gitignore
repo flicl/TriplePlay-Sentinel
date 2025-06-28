@@ -70,3 +70,13 @@ src/collector/*.log
 *.tmp
 *.temp
 *.bak
+
+# Generated reports
+link_report.md
+coverage_report.html
+test_results.xml
+
+# Local development
+.local/
+local_config/
+dev_settings.py

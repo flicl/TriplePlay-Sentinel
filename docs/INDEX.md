@@ -1,128 +1,99 @@
-# 📚 Documentação TriplePlay-Sentinel v2.1.0
+# TriplePlay-Sentinel Documentation Index
 
-**Versão:** 2.1.0 | **Status:** ✅ Production Ready | **Atualizado:** 23/06/2025
+Welcome to the complete documentation for TriplePlay-Sentinel, an enterprise-grade network monitoring system for MikroTik-Zabbix integration.
 
----
+## 📚 Documentation Structure
 
-## 📖 Índice de Documentação
+### 🚀 Getting Started
+- [Quick Start Guide](guides/quick_start.md) - Get up and running in minutes
+- [Docker Setup](guides/docker_setup.md) - Containerized deployment
+- [Docker Enhanced Setup](guides/docker-enhanced-setup.md) - Advanced Docker configuration
+- [Docker Build and Run](guides/docker_build_and_run.md) - Manual Docker deployment
 
-### 🚀 Início Rápido
-- [README Principal](../README.md) - Visão geral e quick start
-- [Guia de Instalação Rápida](guides/quick_start.md)
-- [Docker Setup](guides/docker_setup.md)
-- [Docker Build & Run](guides/docker_build_and_run.md) - Guia completo de build e execução manual
+### 📡 API Documentation
+- [Collector API](api/collector_api.md) - Complete API reference
+- [RouterOS Integration](api/routeros_integration.md) - MikroTik SSH integration
+- [Zabbix HTTP Agent](api/zabbix_http_agent.md) - Zabbix integration details
 
-### 🎯 Zabbix Integration
-- [Template Principal](../templates/zabbix/README.md)
-- [Configuração Zabbix](zabbix/ZABBIX_CONFIGURATION.md)
-- [Guia de Importação](../templates/zabbix/examples/import-guide.md)
-- [Configuração de Hosts](../templates/zabbix/examples/host-configuration.md)
+### 🏗️ Architecture
+- [System Architecture](architecture/system_architecture.md) - Overall system design
+- [Cache Architecture](architecture/cache_architecture.md) - Redis caching implementation
 
-### 🔧 Configuração e Setup
-- [Configuração MikroTik](guides/mikrotik_setup.md)
-- [Configuração Zabbix](guides/zabbix_configuration.md)
+### 🔧 Configuration & Setup
+- [MikroTik Setup](guides/mikrotik_setup.md) - MikroTik device configuration
+- [Zabbix Configuration](guides/zabbix_configuration.md) - Zabbix server setup
+- [Zabbix Configuration (Extended)](zabbix/ZABBIX_CONFIGURATION.md) - Detailed Zabbix setup
 
-### 🏗️ Arquitetura
-- [Visão Geral do Sistema](architecture/system_architecture.md)
-- [Cache Architecture](architecture/cache_architecture.md)
-- [Visão Geral do Projeto](PROJECT_OVERVIEW.md)
+### 🐳 Docker Documentation
+- [Docker Improvements](docker/MELHORIAS_DOCKER.md) - Docker enhancements and optimizations
 
-### 📡 APIs e Integrações
-- [API do Collector](api/collector_api.md)
-- [Integração RouterOS](api/routeros_integration.md)
-- [Zabbix HTTP Agent](api/zabbix_http_agent.md)
+### 🔒 Security
+- [Security Guidelines](security/security_guidelines.md) - Security best practices and recommendations
 
-### 🛡️ Segurança
-- [Diretrizes de Segurança](security/security_guidelines.md)
+### 🛠️ Troubleshooting
+- [Troubleshooting Guide](troubleshooting/README.md) - Common issues and solutions
 
-### 🔍 Troubleshooting
-- [Guia de Resolução](troubleshooting/README.md)
+### 📈 Project Management
+- [Development Status](project-management/DEVELOPMENT_STATUS.md) - Current development status
+- [Project Structure](project-management/ESTRUTURA_PROJETO.md) - Project organization
+- [Final Project Summary](project-management/PROJETO_FINAL.md) - Project completion summary
+- [Final Conclusion](project-management/CONCLUSAO_FINAL.md) - Project conclusions
+- [Project Reorganization](project-management/REORGANIZACAO_PROJETO.md) - Recent project reorganization
+- [Links Configuration](project-management/LINKS_CONFIGURATION.md) - URL and link management
+- [Links Update Report](project-management/ATUALIZACAO_LINKS.md) - Recent link updates and fixes
 
-### 📜 Histórico
-- [Status de Desenvolvimento](../DEVELOPMENT_STATUS.md)
-- [Release Notes v2.1.0](../RELEASE_NOTES_v2.1.0.md)
-- [Histórico de Cleanup](cleanup-history/) - Documentação do processo de limpeza
+### 📋 Contributing
+- [Contributing Guidelines](contributing/CONTRIBUTING.md) - How to contribute to the project
 
----
+### 📝 Changelog & Releases
+- [Changelog](changelog/CHANGELOG.md) - Version history and changes
+- [Release Notes v2.1.0](releases/RELEASE_NOTES_v2.1.0.md) - Latest release notes
 
-## 🎯 Funcionalidades Principais (v2.1.0)
+### 🧪 Templates & Examples
+- [Zabbix Templates](../templates/zabbix/README.md) - Ready-to-use Zabbix templates
+- [Dashboard Setup Examples](../templates/zabbix/examples/dashboard-setup.md)
+- [Host Configuration Examples](../templates/zabbix/examples/host-configuration.md)
+- [Import Guide](../templates/zabbix/examples/import-guide.md)
 
-### ✅ Monitoramento Ativo
-- **ICMP Ping Tests**: Latência, jitter, perda de pacotes, disponibilidade
-- **Traceroute Analysis**: Análise de rota com contagem de hops
-- **Network Quality Score**: Cálculo automático de qualidade de rede
-- **Collector Health**: Status e performance do collector
-- **Cache Metrics**: Métricas de hit/miss do cache
-- **MikroTik Integration**: Status de conexão SSH
+## 🔍 Quick Navigation
 
-### 📊 Dashboard e Visualização
-- **Network Overview Dashboard**: Dashboard principal de monitoramento
-- **Performance Graphs**: Gráficos de RTT, perda de pacotes e jitter
-- **Quality Metrics**: Scores e trends de qualidade de rede
-- **System Health**: Monitoramento do collector e infraestrutura
+### For New Users
+1. Start with [Quick Start Guide](guides/quick_start.md)
+2. Review [System Architecture](architecture/system_architecture.md)
+3. Follow [Docker Setup](guides/docker_setup.md) for deployment
+4. Configure [MikroTik Setup](guides/mikrotik_setup.md)
+5. Import [Zabbix Templates](../templates/zabbix/README.md)
 
-### ⚙️ Compatibilidade
-- **Zabbix Server**: 6.0+
-- **Collector**: TriplePlay-Sentinel v2.0.0+
-- **MikroTik RouterOS**: 6.0+
-- **Python**: 3.9+ (para collector)
+### For Developers
+1. Read [Contributing Guidelines](contributing/CONTRIBUTING.md)
+2. Understand [System Architecture](architecture/system_architecture.md)
+3. Review [API Documentation](api/collector_api.md)
+4. Check [Development Status](project-management/DEVELOPMENT_STATUS.md)
 
----
+### For System Administrators
+1. Review [Security Guidelines](security/security_guidelines.md)
+2. Follow [Zabbix Configuration](guides/zabbix_configuration.md)
+3. Check [Troubleshooting Guide](troubleshooting/README.md)
+4. Monitor [Changelog](changelog/CHANGELOG.md) for updates
 
-## 📋 Mudanças na v2.1.0
+## 📞 Getting Help
 
-### ❌ Removido (Cleanup)
-- **TCP Connection Monitoring**: Todos os items, triggers e widgets TCP
-- **TCP Services Status Widget**: Widget de dashboard não funcional
-- **TCP Connection Time Graph**: Gráfico de performance TCP
-- **Referências órfãs**: Todas as referências quebradas eliminadas
+- **Documentation Issues**: If you find errors or missing information in the documentation
+- **Technical Support**: For implementation and configuration questions
+- **Bug Reports**: For software issues and unexpected behavior
+- **Feature Requests**: For new functionality suggestions
 
-### ✅ Melhorias
-- **Template otimizado**: Tamanho significativamente reduzido
-- **Clareza aprimorada**: Apenas funcionalidades implementadas
-- **Performance**: Processamento mais rápido do template
-- **Documentação**: 100% atualizada e consistente
+## 📊 Documentation Status
 
----
-
-## 🚀 Como Começar
-
-### 1. **Instalação Rápida**
-```bash
-# Clone o repositório
-git clone <repository-url>
-cd TriplePlay-Sentinel
-
-# Inicie com Docker
-docker-compose up --build -d
-
-# Ou execute localmente
-./start_local.sh
-```
-
-### 2. **Configuração Zabbix**
-```bash
-# Importe o template
-# Configuration → Templates → Import
-# Arquivo: templates/zabbix/tripleplay-sentinel-template.yml
-```
-
-### 3. **Configuração de Host**
-- Configure macros do MikroTik
-- Defina targets de teste
-- Ajuste thresholds conforme necessário
+| Section | Status | Last Updated |
+|---------|--------|--------------|
+| API Documentation | ✅ Complete | 2025-06-27 |
+| Architecture | ✅ Complete | 2025-06-27 |
+| Installation Guides | ✅ Complete | 2025-06-27 |
+| Security Guidelines | ✅ Complete | 2025-06-27 |
+| Troubleshooting | ✅ Complete | 2025-06-27 |
+| Templates | ✅ Complete | 2025-06-27 |
 
 ---
 
-## 📞 Suporte e Comunidade
-
-- **Documentação**: Diretório `/docs/`
-- **Issues**: GitHub Issues tracker
-- **Configuração**: Guias em `/docs/guides/`
-- **API Reference**: `/docs/api/`
-
----
-
-**Equipe:** TriplePlay Development Team  
-**Licença:** [Sua Licença]  
-**Repositório:** [URL do Repositório]
+*For the most up-to-date information, always refer to the specific documentation files and the main [README.md](../README.md) in the project root.*

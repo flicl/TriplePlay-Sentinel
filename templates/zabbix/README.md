@@ -1,6 +1,6 @@
 # TriplePlay-Sentinel Zabbix Template 6.0
 
-**Versão:** 2.1.0 | **Status:** ✅ Production Ready | **Última Atualização:** 23/06/2025
+**Versão:** 2.1.0 | **Status:** ✅ Production Ready | **Última Atualização:** 28/06/2025
 
 ## 📋 Visão Geral
 
@@ -271,7 +271,7 @@ Ajuste as macros de threshold conforme suas necessidades:
 - [Zabbix 6.0 Documentation](https://www.zabbix.com/documentation/6.0)
 - [HTTP Agent Items](https://www.zabbix.com/documentation/6.0/manual/config/items/itemtypes/http)
 - [Template Guidelines](https://www.zabbix.com/documentation/6.0/manual/config/templates_out_of_the_box)
-- [TriplePlay-Sentinel API Documentation](../docs/api/collector_api.md)
+- [TriplePlay-Sentinel API Documentation](../../docs/api/collector_api.md)
 
 ## 🤝 Suporte
 

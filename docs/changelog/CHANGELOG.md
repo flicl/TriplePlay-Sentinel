@@ -19,35 +19,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Updated dependencies to latest secure versions
 
-## [2.1.0] - 2025-06-23
+## [2.1.0] - 2025-06-28
 
-### 🧹 Major Cleanup & Optimization
+### 🧹 Major Cleanup & Documentation Overhaul
 
 #### Added
-- Complete documentation overhaul with professional structure
+- Complete project structure reorganization following industry standards
+- Professional documentation structure with categorized organization
+- Automated link checking system (`check_links.sh`)
+- Centralized URL and link management system
 - Contributing guidelines and development standards
 - Enhanced API documentation with detailed examples
 - Performance benchmarking and metrics
 - Security best practices documentation
 - Professional README with badges and clear structure
+- Project management documentation tracking
+- Comprehensive troubleshooting guides
 
 #### Changed
 - **BREAKING**: Simplified architecture to 2 services only (collector + Redis)
+- **DOCUMENTATION**: Complete reorganization into logical categories
+- **PROJECT STRUCTURE**: Professional layout with clean root directory
+- **LINKS**: Standardized all GitHub URLs to official repository
+- **API ENDPOINTS**: Corrected all endpoint references (removed incorrect v1 versioning)
 - Unified Docker Compose configuration into single file
 - Optimized cache implementation for better performance
 - Enhanced error handling and validation
 - Improved SSH connection pooling
+- Professional onboarding experience for new contributors
 
 #### Removed
 - **TCP monitoring functionality** (not implemented in collector)
+- **Unnecessary markdown files** from project root (moved to docs/)
 - PostgreSQL dependency (simplified to Redis-only caching)
 - Nginx proxy (simplified deployment)
 - Prometheus/Grafana integration (Zabbix handles monitoring)
 - Unnecessary debug tools and development containers
+- Inconsistent URL variations throughout documentation
 
 #### Fixed
 - Zabbix template cleaned of all TCP references
-- Documentation consistency issues
+- Documentation consistency issues across all files
+- Broken internal links and navigation paths
+- Incorrect API endpoint references throughout documentation
+- GitHub repository URL standardization
+- Relative path corrections in markdown files
+- Professional project structure implementation
 - Docker image optimization
 - Memory usage optimization
 

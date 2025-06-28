@@ -1,113 +1,81 @@
-# 📚 TriplePlay-Sentinel - Documentação
+# TriplePlay-Sentinel Documentation
 
-**Versão:** 2.1.0 | **Status:** ✅ Limpo e Organizado | **Atualizado:** 23/06/2025
+This directory contains the complete documentation for TriplePlay-Sentinel, an enterprise-grade network monitoring system designed for MikroTik-Zabbix integration.
 
----
+## 📖 Documentation Overview
 
-## 🎯 Visão Geral
+TriplePlay-Sentinel provides a comprehensive monitoring solution that enables Zabbix to perform network connectivity tests through MikroTik devices via SSH. The system features intelligent caching, connection pooling, and a modern REST API architecture.
 
-Documentação completa do TriplePlay-Sentinel, um sistema de monitoramento especializado para integração Zabbix-MikroTik via HTTP Agent (PULL).
+## 🗂️ Documentation Structure
 
-> **💡 Para navegação rápida**, consulte o [**Índice Principal**](INDEX.md) que contém todos os links organizados.
+### 📋 Quick Reference
+- **[INDEX.md](INDEX.md)** - Complete documentation index with navigation
+- **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - High-level project overview
 
----
+### 🚀 Getting Started
+- **[guides/](guides/)** - Installation and setup guides
+  - Quick Start Guide
+  - Docker Setup Instructions
+  - MikroTik Configuration
+  - Zabbix Integration
 
-## 📁 Estrutura da Documentação
+### 📡 Technical Documentation
+- **[api/](api/)** - Complete API reference and integration guides
+- **[architecture/](architecture/)** - System design and architecture documentation
+- **[security/](security/)** - Security guidelines and best practices
 
-### 🚀 **Início Rápido**
-- [**README Principal**](../README.md) - Visão geral e quick start do projeto
-- [**Quick Start Guide**](guides/quick_start.md) - Começar em 15 minutos
-- [**Docker Setup**](guides/docker_setup.md) - Instalação com Docker
+### 🐳 Deployment
+- **[docker/](docker/)** - Docker-specific documentation and improvements
 
-### 🎯 **Zabbix Integration**
-- [**Template Zabbix**](../templates/zabbix/README.md) - Template v2.1.0 limpo
-- [**Configuração Zabbix**](zabbix/ZABBIX_CONFIGURATION.md) - Setup detalhado
-- [**Guia de Importação**](../templates/zabbix/examples/import-guide.md) - Passo a passo
-- [**Configuração de Hosts**](../templates/zabbix/examples/host-configuration.md) - Multi-site
+### 🔧 Configuration
+- **[zabbix/](zabbix/)** - Zabbix configuration and template documentation
 
-### 🏗️ **Arquitetura**
-- [**Visão Geral do Sistema**](architecture/system_architecture.md) - Arquitetura completa
-- [**Cache Architecture**](architecture/cache_architecture.md) - Sistema de cache
-- [**Project Overview**](PROJECT_OVERVIEW.md) - Visão geral técnica
+### 🛠️ Support & Troubleshooting
+- **[troubleshooting/](troubleshooting/)** - Common issues and solutions
 
-### 📡 **APIs e Integrações**
-- [**Collector API**](api/collector_api.md) - API REST completa
-- [**RouterOS Integration**](api/routeros_integration.md) - Integração MikroTik
-- [**Zabbix HTTP Agent**](api/zabbix_http_agent.md) - Configuração HTTP Agent
+### 📋 Project Information
+- **[project-management/](project-management/)** - Project status and management documentation
+- **[changelog/](changelog/)** - Version history and changes
+- **[releases/](releases/)** - Release notes and version information
+- **[contributing/](contributing/)** - Development and contribution guidelines
 
-### ⚙️ **Configuração**
-- [**MikroTik Setup**](guides/mikrotik_setup.md) - Preparação dos dispositivos
-- [**Zabbix Configuration**](guides/zabbix_configuration.md) - Configuração Zabbix
+### 🧹 Archive
+- **[cleanup-history/](cleanup-history/)** - Historical project cleanup documentation
 
-### 🛡️ **Segurança**
-- [**Security Guidelines**](security/security_guidelines.md) - Diretrizes de segurança
+## 🎯 Key Features Documented
 
-### 🔍 **Troubleshooting**
-- [**Guia de Resolução**](troubleshooting/README.md) - Problemas comuns e soluções
+- **ICMP Ping Testing** - Comprehensive latency and packet loss monitoring
+- **Traceroute Analysis** - Network path analysis with detailed hop information
+- **Smart Caching** - Redis-powered caching with configurable TTL
+- **SSH Connection Pooling** - Optimized MikroTik device connections
+- **Health Monitoring** - System health checks and performance metrics
+- **Web Dashboard** - Real-time monitoring interface
+- **Docker Deployment** - Production-ready containerization
 
-### 📜 **Histórico**
-- [**Development Status**](../DEVELOPMENT_STATUS.md) - Status atual do projeto
-- [**Release Notes v2.1.0**](../RELEASE_NOTES_v2.1.0.md) - Notas da versão atual
-- [**Cleanup History**](cleanup-history/) - Histórico do processo de limpeza
+## 🔗 Quick Navigation
 
----
+### New Users
+1. Start with [Quick Start Guide](guides/quick_start.md)
+2. Review [System Architecture](architecture/system_architecture.md)
+3. Follow [Docker Setup](guides/docker_setup.md)
 
-## 👥 Guias por Perfil de Usuário
+### Developers
+1. Check [Contributing Guidelines](contributing/CONTRIBUTING.md)
+2. Review [API Documentation](api/collector_api.md)
+3. Understand [Architecture](architecture/system_architecture.md)
 
-### 👨‍💼 **Administradores de Sistema**
-1. [README Principal](../README.md) → [Quick Start](guides/quick_start.md)
-2. [Template Zabbix](../templates/zabbix/README.md) → [Configuração](zabbix/ZABBIX_CONFIGURATION.md)
-3. [Troubleshooting](troubleshooting/README.md)
+### System Administrators
+1. Review [Security Guidelines](security/security_guidelines.md)
+2. Configure [Zabbix Integration](zabbix/ZABBIX_CONFIGURATION.md)
+3. Check [Troubleshooting Guide](troubleshooting/README.md)
 
-### 🔧 **Operadores de Rede**
-1. [Guia de Importação](../templates/zabbix/examples/import-guide.md)
-2. [Configuração de Hosts](../templates/zabbix/examples/host-configuration.md)
-3. [API Reference](api/collector_api.md)
+## 📞 Support
 
-### 👨‍💻 **Desenvolvedores**
-1. [System Architecture](architecture/system_architecture.md)
-2. [Collector API](api/collector_api.md) → [RouterOS Integration](api/routeros_integration.md)
-3. [Development Status](../DEVELOPMENT_STATUS.md)
-
-### 🛡️ **Security Officers**
-1. [Security Guidelines](security/security_guidelines.md)
-2. [System Architecture](architecture/system_architecture.md)
-
----
-
-## 🧹 Estrutura Limpa (v2.1.0)
-
-Esta documentação foi **reorganizada e limpa** na versão 2.1.0:
-
-### ✅ **Mantido**
-- Documentação essencial e funcional
-- Guias práticos de instalação e configuração
-- Referências de API e arquitetura
-- Histórico importante (movido para `cleanup-history/`)
-
-### ❌ **Removido**
-- Documentação obsoleta e desatualizada
-- Diretórios vazios
-- Arquivos temporários e de teste
-- Referências a funcionalidades não implementadas
-
-### 📈 **Benefícios**
-- **Navegação mais fácil**: Estrutura lógica e clara
-- **Manutenção simplificada**: Menos arquivos desnecessários
-- **Onboarding rápido**: Informações organizadas
-- **Produção ready**: Apenas conteúdo relevante
+For questions or issues not covered in this documentation:
+- Check the [troubleshooting guide](troubleshooting/README.md)
+- Review [GitHub Issues](https://github.com/username/TriplePlay-Sentinel/issues)
+- Consult the [main README](../README.md) for contact information
 
 ---
 
-## 📞 Suporte
-
-- **Índice Completo**: [INDEX.md](INDEX.md)
-- **Issues**: GitHub Issues tracker
-- **API Reference**: [Collector API](api/collector_api.md)
-- **Quick Start**: [Guia Rápido](guides/quick_start.md)
-
----
-
-**Equipe:** TriplePlay Development Team  
-**Licença:** [Sua Licença]  
-**Repositório:** [URL do Repositório]
+*This documentation is actively maintained and updated with each release. For the latest information, always refer to the most recent version.*

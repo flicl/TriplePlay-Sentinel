@@ -57,9 +57,9 @@ nmap -p 22,8728,8729 192.168.1.1
 ssh admin@192.168.1.1
 
 # 4. Teste API manual
-curl -X POST http://collector:5000/api/v1/debug/connection \
+curl -X POST http://collector:5000/api/test \
   -H "Content-Type: application/json" \
-  -d '{"mikrotik_host": "192.168.1.1", "mikrotik_user": "admin"}'
+  -d '{"mikrotik_host": "192.168.1.1", "mikrotik_user": "admin", "target": "8.8.8.8", "test_type": "ping"}'
 ```
 
 #### **Soluções**:
@@ -229,7 +229,7 @@ docker ps | grep sentinel
 docker logs sentinel-collector
 
 # 2. Teste direto da API
-curl -v http://localhost:5000/api/v1/health
+curl -v http://localhost:5000/api/health
 
 # 3. Verificar recursos do sistema
 docker stats sentinel-collector
@@ -339,10 +339,9 @@ Item not supported: HTTP agent error: Connection refused
 #### **Diagnóstico**:
 ```bash
 # 1. Teste manual do HTTP Agent
-curl -X POST "http://collector:5000/api/v1/tests/ping" \
-  -H "Authorization: Bearer API_KEY" \
+curl -X POST "http://collector:5000/api/test" \
   -H "Content-Type: application/json" \
-  -d '{"mikrotik_host":"192.168.1.1","target":"8.8.8.8"}'
+  -d '{"mikrotik_host":"192.168.1.1","mikrotik_user":"admin","target":"8.8.8.8","test_type":"ping"}'
 
 # 2. Verificar logs do Zabbix
 tail -f /var/log/zabbix/zabbix_server.log | grep -i "http agent"
@@ -359,7 +358,7 @@ nslookup collector
 # Deve ser acessível do Zabbix Server
 
 # Teste de conectividade do Zabbix Server
-docker exec zabbix-server curl http://collector:5000/api/v1/health
+docker exec zabbix-server curl http://collector:5000/api/health
 ```
 
 ##### ✅ **Verificar Headers**
@@ -390,9 +389,9 @@ JSONPath error: No data matches expression
 #### **Diagnóstico**:
 ```bash
 # 1. Verificar resposta real da API
-curl -s http://collector:5000/api/v1/tests/ping \
-  -H "Authorization: Bearer API_KEY" \
-  -d '{"mikrotik_host":"192.168.1.1","target":"8.8.8.8"}' | jq .
+curl -s http://collector:5000/api/test \
+  -H "Content-Type: application/json" \
+  -d '{"mikrotik_host":"192.168.1.1","mikrotik_user":"admin","target":"8.8.8.8","test_type":"ping"}' | jq .
 
 # 2. Testar JSONPath expressions
 echo '{"results":{"avg_time_ms":15.5}}' | jq '.results.avg_time_ms'
@@ -445,7 +444,7 @@ $.results.packet_loss_percent
 #### **Diagnóstico**:
 ```bash
 # 1. Verificar métricas de cache
-curl http://collector:5000/api/v1/cache/metrics | jq .
+curl http://collector:5000/api/stats | jq .
 
 # 2. Verificar TTL configuration
 grep -i cache /app/config/.env
@@ -552,10 +551,10 @@ echo "1. Container Status:"
 docker ps | grep sentinel
 
 echo "2. Health Check:"
-curl -s http://localhost:5000/api/v1/health | jq .
+curl -s http://localhost:5000/api/health | jq .
 
 echo "3. Cache Metrics:"
-curl -s http://localhost:5000/api/v1/cache/metrics | jq .
+curl -s http://localhost:5000/api/stats | jq .
 
 echo "4. Recent Logs:"
 docker logs --tail=20 sentinel-collector
@@ -595,4 +594,4 @@ def full_debug():
 
 ---
 
-**🚨 Emergency Procedures**: Para problemas críticos, execute o [Emergency Recovery Guide](troubleshooting/emergency_recovery.md)
+**🚨 Emergency Procedures**: Para problemas críticos, consulte a [documentação de emergência](../guides/emergency_recovery.md)

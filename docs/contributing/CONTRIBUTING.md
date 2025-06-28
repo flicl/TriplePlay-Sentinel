@@ -54,11 +54,11 @@ We welcome contributions in the following areas:
 ```bash
 # Fork the repository on GitHub
 # Then clone your fork
-git clone https://github.com/yourusername/TriplePlay-Sentinel.git
+git clone https://github.com/tripleplay-dev/TriplePlay-Sentinel.git
 cd TriplePlay-Sentinel
 
 # Add upstream remote
-git remote add upstream https://github.com/original/TriplePlay-Sentinel.git
+git remote add upstream https://github.com/tripleplay-dev/TriplePlay-Sentinel.git
 ```
 
 ### 2. Development Environment
