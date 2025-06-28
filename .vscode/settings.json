@@ -1,9 +1,0 @@
-{
-    "chat.mcp.serverSampling": {
-        "TriplePlay-Sentinel/.vscode/mcp.json: desktop-commander": {
-            "allowedModels": [
-                "github.copilot-chat/claude-sonnet-4"
-            ]
-        }
-    }
-}
