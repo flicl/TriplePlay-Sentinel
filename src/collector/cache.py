@@ -9,7 +9,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Optional, List
 from models import TestResult, CacheEntry
-from config import config
+from sentinel_config import config
 
 logger = logging.getLogger('sentinel-cache')
 

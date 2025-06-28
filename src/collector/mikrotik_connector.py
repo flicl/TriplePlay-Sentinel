@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional
 from contextlib import contextmanager
 import librouteros
 from librouteros.query import Key
-from config_api_only import config
+from sentinel_config import config
 
 logger = logging.getLogger('sentinel-mikrotik-api')
 
