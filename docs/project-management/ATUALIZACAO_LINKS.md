@@ -22,7 +22,7 @@ Este documento registra a atualização completa de todos os links na documenta�
 - `https://github.com/[repo]/TriplePlay-Sentinel`
 
 **Depois:** Padronizado para:
-- `https://github.com/tripleplay-dev/TriplePlay-Sentinel`
+- `https://github.com/flicl/TriplePlay-Sentinel`
 
 ### 2. Endpoints da API
 **Antes:** Uso incorreto de versionamento
@@ -135,10 +135,10 @@ grep -r "localhost:5000" docs/ --include="*.md"
 ## 🎯 Padrões Estabelecidos
 
 ### 1. URLs do Repositório
-- **Clone HTTPS:** `https://github.com/tripleplay-dev/TriplePlay-Sentinel.git`
-- **Clone SSH:** `git@github.com:tripleplay-dev/TriplePlay-Sentinel.git`
-- **Issues:** `https://github.com/tripleplay-dev/TriplePlay-Sentinel/issues`
-- **Releases:** `https://github.com/tripleplay-dev/TriplePlay-Sentinel/releases`
+- **Clone HTTPS:** `https://github.com/flicl/TriplePlay-Sentinel.git`
+- **Clone SSH:** `git@github.com:flicl/TriplePlay-Sentinel.git`
+- **Issues:** `https://github.com/flicl/TriplePlay-Sentinel/issues`
+- **Releases:** `https://github.com/flicl/TriplePlay-Sentinel/releases`
 
 ### 2. Endpoints da API
 - **Base URL:** `http://localhost:5000`

@@ -7,7 +7,7 @@
 ### 1. Configuração Básica
 ```bash
 # Clone o projeto
-git clone https://github.com/tripleplay-dev/TriplePlay-Sentinel.git
+git clone https://github.com/flicl/TriplePlay-Sentinel.git
 cd TriplePlay-Sentinel
 
 # Configure o ambiente

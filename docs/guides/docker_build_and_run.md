@@ -13,7 +13,7 @@ Este guia mostra como criar a imagem Docker e executar o container do TriplePlay
 ### 1. Clone o Repositório
 
 ```bash
-git clone https://github.com/tripleplay-dev/TriplePlay-Sentinel.git
+git clone https://github.com/flicl/TriplePlay-Sentinel.git
 cd TriplePlay-Sentinel
 ```
 

@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Version](https# Clone repository
-git clone https://github.com/tripleplay-dev/TriplePlay-Sentinel.git
+git clone https://github.com/flicl/TriplePlay-Sentinel.git
 cd TriplePlay-Sentinel
 
 # Configure environment
@@ -203,7 +203,7 @@ We welcome contributions! Please see our [contributing guidelines](docs/contribu
 ### Development Setup
 ```bash
 # Fork and clone
-git clone https://github.com/tripleplay-dev/TriplePlay-Sentinel.git
+git clone https://github.com/flicl/TriplePlay-Sentinel.git
 cd TriplePlay-Sentinel
 
 # Setup environment

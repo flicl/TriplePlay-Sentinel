@@ -66,7 +66,7 @@ This release represents a comprehensive update of the TriplePlay-Sentinel projec
 ### New Installations
 ```bash
 # Download the template
-curl -O https://raw.githubusercontent.com/tripleplay-dev/TriplePlay-Sentinel/main/templates/zabbix/tripleplay-sentinel-template.yml
+curl -O https://raw.githubusercontent.com/flicl/TriplePlay-Sentinel/main/templates/zabbix/tripleplay-sentinel-template.yml
 
 # Import via Zabbix Web Interface
 Configuration → Templates → Import
@@ -155,4 +155,4 @@ If TCP monitoring is needed in the future:
 **Team:** TriplePlay Development Team  
 **Maintenance:** Active  
 **License:** MIT License  
-**Repository**: https://github.com/tripleplay-dev/TriplePlay-Sentinel
+**Repository**: https://github.com/flicl/TriplePlay-Sentinel

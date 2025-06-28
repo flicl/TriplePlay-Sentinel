@@ -4,9 +4,9 @@ Este arquivo centraliza todas as URLs e links utilizados na documentação do pr
 
 ## 🔗 Repositório Principal
 
-- **GitHub Repository**: `https://github.com/tripleplay-dev/TriplePlay-Sentinel`
-- **Docker Hub**: `https://hub.docker.com/r/tripleplay-dev/tripleplay-sentinel`
-- **Git Clone URL**: `https://github.com/tripleplay-dev/TriplePlay-Sentinel.git`
+- **GitHub Repository**: `https://github.com/flicl/TriplePlay-Sentinel`
+- **Docker Hub**: `https://hub.docker.com/r/flicl/tripleplay-sentinel`
+- **Git Clone URL**: `https://github.com/flicl/TriplePlay-Sentinel.git`
 
 ## 🌐 URLs de API e Endpoints
 
@@ -49,7 +49,7 @@ Este arquivo centraliza todas as URLs e links utilizados na documentação do pr
 ## 🐳 Docker
 
 ### Imagens
-- **Main Image**: `tripleplay-dev/tripleplay-sentinel:latest`
+- **Main Image**: `flicl/tripleplay-sentinel:latest`
 - **Redis Image**: `redis:7-alpine`
 
 ### Containers
@@ -64,16 +64,16 @@ Este arquivo centraliza todas as URLs e links utilizados na documentação do pr
 - **Examples**: `templates/zabbix/examples/`
 
 ### Raw GitHub URLs
-- **Template Download**: `https://raw.githubusercontent.com/tripleplay-dev/TriplePlay-Sentinel/main/templates/zabbix/tripleplay-sentinel-template.yml`
+- **Template Download**: `https://raw.githubusercontent.com/flicl/TriplePlay-Sentinel/main/templates/zabbix/tripleplay-sentinel-template.yml`
 
 ## 🔧 Desenvolvimento
 
 ### Repositório URLs
-- **Clone HTTPS**: `https://github.com/tripleplay-dev/TriplePlay-Sentinel.git`
-- **Clone SSH**: `git@github.com:tripleplay-dev/TriplePlay-Sentinel.git`
-- **Issues**: `https://github.com/tripleplay-dev/TriplePlay-Sentinel/issues`
-- **Discussions**: `https://github.com/tripleplay-dev/TriplePlay-Sentinel/discussions`
-- **Pull Requests**: `https://github.com/tripleplay-dev/TriplePlay-Sentinel/pulls`
+- **Clone HTTPS**: `https://github.com/flicl/TriplePlay-Sentinel.git`
+- **Clone SSH**: `git@github.com:flicl/TriplePlay-Sentinel.git`
+- **Issues**: `https://github.com/flicl/TriplePlay-Sentinel/issues`
+- **Discussions**: `https://github.com/flicl/TriplePlay-Sentinel/discussions`
+- **Pull Requests**: `https://github.com/flicl/TriplePlay-Sentinel/pulls`
 
 ## 🌍 External Resources
 

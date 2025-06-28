@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 # Configurações
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOCS_DIR="${PROJECT_ROOT}/docs"
-GITHUB_REPO="tripleplay-dev/TriplePlay-Sentinel"
+GITHUB_REPO="flicl/TriplePlay-Sentinel"
 BASE_URL="https://github.com/${GITHUB_REPO}"
 
 # Função para log colorido
