@@ -5,11 +5,13 @@ class SentinelDashboard {
     constructor() {
         this.baseUrl = window.location.origin;
         this.testResults = [];
+        this.apiKey = localStorage.getItem('sentinel-api-key') || '';
         this.init();
     }
 
     init() {
         this.setupEventListeners();
+        this.loadSavedApiKey();
         this.loadStats();
         this.startStatsUpdate();
     }
@@ -20,36 +22,127 @@ class SentinelDashboard {
             e.preventDefault();
             this.runTest();
         });
+
+        // Botão para salvar API key
+        document.getElementById('save-api-key').addEventListener('click', () => {
+            this.saveApiKey();
+        });
+
+        // Enter no campo da API key
+        document.getElementById('api-key').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.saveApiKey();
+            }
+        });
+    }
+
+    loadSavedApiKey() {
+        const apiKeyInput = document.getElementById('api-key');
+        const alert = document.getElementById('api-key-alert');
+        
+        if (this.apiKey) {
+            apiKeyInput.value = this.apiKey;
+            // Esconde o alerta se já tem API key
+            if (alert) {
+                alert.style.display = 'none';
+            }
+        }
+    }
+
+    saveApiKey() {
+        const apiKeyInput = document.getElementById('api-key');
+        const saveBtn = document.getElementById('save-api-key');
+        const newApiKey = apiKeyInput.value.trim();
+        
+        if (newApiKey) {
+            this.apiKey = newApiKey;
+            localStorage.setItem('sentinel-api-key', this.apiKey);
+            this.showNotification('API Key salva com sucesso!', 'success');
+            
+            // Atualiza visual do botão
+            saveBtn.className = 'btn btn-success btn-sm';
+            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                saveBtn.className = 'btn btn-outline-light btn-sm';
+                saveBtn.innerHTML = '<i class="fas fa-save"></i>';
+            }, 2000);
+            
+            // Recarrega as estatísticas com a nova API key
+            this.loadStats();
+        } else {
+            this.apiKey = '';
+            localStorage.removeItem('sentinel-api-key');
+            this.showNotification('API Key removida', 'info');
+            
+            // Atualiza status para mostrar que autenticação é necessária
+            this.updateStatusIndicator(false, 'Erro: Autenticação requerida');
+        }
+    }
+
+    getAuthHeaders() {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (this.apiKey) {
+            headers['X-API-Key'] = this.apiKey;
+        }
+        
+        return headers;
     }
 
 
 
     async loadStats() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/health`);
+            const response = await fetch(`${this.baseUrl}/api/health`, {
+                headers: this.getAuthHeaders()
+            });
+            
+            if (response.status === 401) {
+                this.updateStatusIndicator(false, 'Erro: Autenticação requerida');
+                this.showApiKeyAlert();
+                return;
+            }
+            
             const data = await response.json();
             
             if (data.status === 'healthy') {
                 this.updateStatusIndicator(true);
                 this.updateMetrics(data);
                 this.updateDetailedStats(data);
+                this.hideApiKeyAlert();
             } else {
-                this.updateStatusIndicator(false);
+                this.updateStatusIndicator(false, 'Erro: Serviço indisponível');
             }
         } catch (error) {
             console.error('Erro ao carregar estatísticas:', error);
-            this.updateStatusIndicator(false);
+            this.updateStatusIndicator(false, 'Erro: Falha na conexão');
         }
     }
 
-    updateStatusIndicator(isOnline) {
+    showApiKeyAlert() {
+        const alert = document.getElementById('api-key-alert');
+        if (alert) {
+            alert.style.display = 'block';
+        }
+    }
+
+    hideApiKeyAlert() {
+        const alert = document.getElementById('api-key-alert');
+        if (alert) {
+            alert.style.display = 'none';
+        }
+    }
+
+    updateStatusIndicator(isOnline, customMessage = null) {
         const indicator = document.getElementById('status-indicator');
         if (isOnline) {
             indicator.className = 'badge bg-success';
             indicator.innerHTML = '<i class="fas fa-check-circle"></i> Online';
         } else {
             indicator.className = 'badge bg-danger';
-            indicator.innerHTML = '<i class="fas fa-times-circle"></i> Offline';
+            indicator.innerHTML = `<i class="fas fa-times-circle"></i> ${customMessage || 'Offline'}`;
         }
     }
 
@@ -114,6 +207,12 @@ class SentinelDashboard {
         const btn = document.getElementById('run-test-btn');
         const originalHtml = btn.innerHTML;
         
+        // Verifica se a API key está configurada
+        if (!this.apiKey) {
+            this.showNotification('Por favor, configure a API Key primeiro', 'warning');
+            return;
+        }
+        
         // Atualiza botão para estado de loading
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Executando...';
@@ -123,11 +222,14 @@ class SentinelDashboard {
             
             const response = await fetch(`${this.baseUrl}/api/test`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: this.getAuthHeaders(),
                 body: JSON.stringify(formData)
             });
+
+            if (response.status === 401) {
+                this.showNotification('Erro: API Key inválida ou expirada', 'danger');
+                return;
+            }
 
             const result = await response.json();
             

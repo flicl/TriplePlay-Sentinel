@@ -414,9 +414,9 @@ Environment Variables:
   MIKROTIK_PASSWORD      MikroTik password (default: password)
 
 Examples:
-  python example_api_usage.py
-  python example_api_usage.py --url http://my-server:5000
-  python example_api_usage.py --mikrotik-host 10.0.0.1 --mikrotik-user monitor
+  python sentinel_client.py
+  python sentinel_client.py --url http://my-server:5000
+  python sentinel_client.py --mikrotik-host 10.0.0.1 --mikrotik-user monitor
         """
     )
     

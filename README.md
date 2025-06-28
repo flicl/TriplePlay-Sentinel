@@ -69,7 +69,7 @@ cd TriplePlay-Sentinel
 
 # Build and run with Docker
 cd src/collector
-docker build -f Dockerfile.api-only -t tripleplay-sentinel:latest .
+docker build -t tripleplay-sentinel:latest .
 docker run -d -p 5000:5000 --name sentinel tripleplay-sentinel:latest
 ```
 
@@ -81,10 +81,10 @@ git clone https://github.com/flicl/TriplePlay-Sentinel.git
 cd TriplePlay-Sentinel/src/collector
 
 # Install dependencies
-pip install -r requirements_api_only.txt
+pip install -r requirements.txt
 
 # Run the application
-python app_api_only.py
+python sentinel_api_server.py
 ```
 
 ## 🔧 Configuration
@@ -191,7 +191,7 @@ GET /api/v2/stats
 ### **Python Client**
 
 ```python
-from example_api_usage import TriplePlaySentinelClient
+from sentinel_client import TriplePlaySentinelClient
 
 # Initialize client
 client = TriplePlaySentinelClient(
@@ -220,10 +220,10 @@ if success:
 
 ```bash
 # Run demonstration
-python example_api_usage.py --mikrotik-host 192.168.1.1
+python sentinel_client.py --mikrotik-host 192.168.1.1
 
 # With custom settings
-python example_api_usage.py \\
+python sentinel_client.py \\
   --url http://my-server:5000 \\
   --mikrotik-host 10.0.0.1 \\
   --mikrotik-user monitor \\
@@ -268,10 +268,10 @@ curl http://localhost:5000/api/v2/stats
 ```
 TriplePlay-Sentinel/
 ├── src/collector/           # Main application
-│   ├── app_api_only.py     # Flask API application
-│   ├── mikrotik_librouteros.py  # MikroTik connector
-│   ├── config_api_only.py  # Configuration management
-│   └── example_api_usage.py # Client example
+│   ├── sentinel_api_server.py     # Flask API application
+│   ├── mikrotik_connector.py  # MikroTik connector
+│   ├── sentinel_config.py  # Configuration management
+│   └── sentinel_client.py # Client example
 ├── docs/                   # Documentation
 ├── templates/              # Zabbix templates
 └── docker-compose.yml      # Container orchestration

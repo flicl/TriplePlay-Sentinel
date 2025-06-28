@@ -1,60 +1,48 @@
-# Dockerfile para TriplePlay-Sentinel Collector
-# Sistema de Monitoramento Centralizado MikroTik-Zabbix via HTTP Agent (PULL)
-
+# TriplePlay-Sentinel API-Only Collector
+# Dockerfile otimizado para máxima performance (sem SSH)
 FROM python:3.11-slim
 
-# Metadados
-LABEL maintainer="TriplePlay Team <support@tripleplay.com>"
+# Metadata
+LABEL maintainer="TriplePlay-Sentinel"
 LABEL version="2.0.0"
-LABEL description="TriplePlay-Sentinel Collector - Sistema de Monitoramento Centralizado MikroTik-Zabbix"
+LABEL description="Sistema de Monitoramento 100% baseado na API MikroTik (sem SSH)"
 
-# Argumentos de build
-ARG DEBIAN_FRONTEND=noninteractive
-
-# Instala dependências do sistema
-RUN apt-get update && apt-get install -y \
-    openssh-client \
-    netcat-openbsd \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
-
-# Cria usuário não-root para segurança
-RUN groupadd -r sentinel && useradd -r -g sentinel sentinel
+# Variáveis de ambiente
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV FLASK_APP=sentinel_api_server.py
+ENV COLLECTOR_HOST=0.0.0.0
+ENV COLLECTOR_PORT=5000
 
 # Diretório de trabalho
 WORKDIR /app
 
-# Copia requirements primeiro (para cache de layer)
+# Copia apenas os arquivos necessários (API-only)
 COPY requirements.txt .
+COPY sentinel_config.py .
+COPY mikrotik_connector.py .
+COPY sentinel_api_server.py .
+COPY models.py .
+COPY processor.py .
+COPY cache.py .
+COPY templates/ templates/
+COPY static/ static/
 
-# Instala dependências Python
+# Instala dependências otimizadas
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copia código fonte
-COPY . .
-
-# Cria diretórios necessários
-RUN mkdir -p /app/logs && \
-    chown -R sentinel:sentinel /app
-
-# Muda para usuário não-root
+# Cria usuário não-root
+RUN useradd --create-home --shell /bin/bash sentinel
+RUN chown -R sentinel:sentinel /app
 USER sentinel
 
-# Portas expostas
+# Healthcheck otimizado
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:5000/health', timeout=5)"
+
+# Exposição da porta
 EXPOSE 5000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:5000/api/health || exit 1
-
-# Variáveis de ambiente padrão
-ENV COLLECTOR_HOST=0.0.0.0
-ENV COLLECTOR_PORT=5000
-ENV LOG_LEVEL=INFO
-ENV CACHE_TTL=30
-ENV PYTHONUNBUFFERED=1
-
-# Comando padrão
-CMD ["python", "-u", "app.py"]
+# Comando de inicialização
+CMD ["python", "sentinel_api_server.py"]

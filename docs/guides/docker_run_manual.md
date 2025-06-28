@@ -5,7 +5,7 @@ Este guia mostra como executar o TriplePlay-Sentinel usando comandos `docker run
 ## 📋 Pré-requisitos
 
 - Docker instalado e funcionando
-- Imagem `tripleplay-sentinel:api-only` já construída
+- Imagem `tripleplay-sentinel:latest` já construída
 - MikroTik com API habilitada (porta 8728/8729)
 - Acesso às portas necessárias
 
@@ -126,7 +126,7 @@ docker run -d \
   --health-timeout=10s \
   --health-retries=3 \
   --health-start-period=30s \
-  tripleplay-sentinel:api-only
+  tripleplay-sentinel:latest
 ```
 
 ## 🔑 Gerando API Key (Opcional)

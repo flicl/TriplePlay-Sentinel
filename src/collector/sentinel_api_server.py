@@ -27,8 +27,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-from config_api_only import config_api
-from mikrotik_librouteros import MikroTikConnector
+from sentinel_config import config_api
+from mikrotik_connector import MikroTikConnector
 
 # Configuração de logging
 logging.basicConfig(

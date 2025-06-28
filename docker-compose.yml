@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     
     ports:
-      - "5000:5000"
+      - "58500:5000"
     
     environment:
       # Configurações básicas
@@ -49,6 +49,10 @@ services:
     volumes:
       - sentinel_logs:/app/logs
       - ./src/collector/.env:/app/.env:ro
+    
+    networks:
+      - public_network
+      - app_network
     
     depends_on:
       redis:
@@ -96,6 +100,9 @@ services:
       --maxmemory-policy allkeys-lru
       ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
     
+    networks:
+      - app_network
+    
     volumes:
       - redis_data:/data
     
@@ -134,9 +141,19 @@ volumes:
 # NETWORKS
 # =================================================================
 networks:
-  default:
-    name: tripleplay-sentinel
+  # Rede interna - apenas para comunicação Redis
+  app_network:
+    name: tripleplay-app-network
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.1.0/24
+  
+  # Rede externa - acesso público ao Sentinel
+  public_network:
+    name: tripleplay-public-network
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.20.2.0/24

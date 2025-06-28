@@ -27,6 +27,27 @@
             width: 1rem;
             height: 1rem;
         }
+        .api-key-input {
+            min-width: 200px;
+        }
+        .api-key-input input[type="password"] {
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .navbar .input-group-sm .form-control {
+            border-color: #495057;
+            background-color: #495057;
+            color: #fff;
+        }
+        .navbar .input-group-sm .form-control::placeholder {
+            color: #adb5bd;
+        }
+        .navbar .input-group-sm .form-control:focus {
+            border-color: #80bdff;
+            background-color: #495057;
+            color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -36,15 +57,49 @@
                 <i class="fas fa-shield-alt"></i>
                 TriplePlay-Sentinel Dashboard
             </span>
-            <span class="navbar-text">
-                <span id="status-indicator" class="badge bg-success">
-                    <i class="fas fa-check-circle"></i> Online
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <div class="input-group input-group-sm api-key-input">
+                        <span class="input-group-text">
+                            <i class="fas fa-key"></i>
+                        </span>
+                        <input type="password" class="form-control" id="api-key" placeholder="API Key" title="Digite sua API Key aqui">
+                        <button class="btn btn-outline-light btn-sm" type="button" id="save-api-key" title="Salvar API Key">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+                <span class="navbar-text">
+                    <span id="status-indicator" class="badge bg-danger">
+                        <i class="fas fa-times-circle"></i> Erro: Autenticação requerida
+                    </span>
                 </span>
-            </span>
+            </div>
         </div>
     </nav>
 
     <div class="container-fluid mt-4">
+        <!-- API Key Instructions Alert -->
+        <div class="row mb-3" id="api-key-alert">
+            <div class="col-12">
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle"></i> Configuração Necessária
+                    </h6>
+                    <p class="mb-2">
+                        Para usar o dashboard, você precisa configurar sua API Key no campo acima. 
+                        Esta chave de API é necessária para autenticar as requisições ao servidor.
+                    </p>
+                    <hr>
+                    <small class="text-muted">
+                        <strong>Dica:</strong> A API Key deve ser a mesma configurada no arquivo <code>.env</code> do servidor.
+                        Se você não tem uma API Key, consulte a documentação do projeto.
+                    </small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+
         <!-- Status Cards -->
         <div class="row mb-4">
             <div class="col-md-3">

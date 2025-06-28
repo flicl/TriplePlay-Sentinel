@@ -5,6 +5,19 @@ All notable changes to TriplePlay-Sentinel will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2025-06-28
+
+### 🔧 Changed
+- **Professional Naming**: Renamed core files for better clarity and professionalism
+  - `app_api_only.py` → `sentinel_api_server.py`
+  - `config_api_only.py` → `sentinel_config.py`
+  - `mikrotik_librouteros.py` → `mikrotik_connector.py`
+  - `example_api_usage.py` → `sentinel_client.py`
+  - `requirements_api_only.txt` → `requirements.txt`
+  - `Dockerfile.api-only` → `Dockerfile`
+- **Documentation Updates**: Updated all references to use new file names
+- **Import Statements**: Updated all import statements to use new module names
+
 ## [2.0.0] - 2025-06-28
 
 ### 🚀 Added
