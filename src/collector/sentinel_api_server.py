@@ -47,9 +47,9 @@ CORS(app)
 
 # Inicializa o pool de conexões MikroTik
 mikrotik_connector = MikroTikConnector(
-    pool_size=config_api.POOL_SIZE,
-    timeout=config_api.TIMEOUT,
-    max_batch_size=config_api.MAX_BATCH_SIZE
+    pool_size=config_api.MAX_CONNECTIONS_PER_HOST,
+    timeout=config_api.MIKROTIK_API_TIMEOUT,
+    max_batch_size=config_api.MAX_CONCURRENT_COMMANDS
 )
 
 # Estatísticas globais da aplicação
@@ -541,7 +541,7 @@ def get_stats():
                 'max_concurrent_commands': config_api.MAX_CONCURRENT_COMMANDS,
                 'max_connections_per_host': config_api.MAX_CONNECTIONS_PER_HOST,
                 'cache_ttl_seconds': config_api.CACHE_TTL,
-                'mikrotik_timeout': config_api.TIMEOUT,
+                'mikrotik_timeout': config_api.MIKROTIK_API_TIMEOUT,
                 'mikrotik_use_ssl': config_api.MIKROTIK_USE_SSL
             },
             'timestamp': datetime.now().isoformat()

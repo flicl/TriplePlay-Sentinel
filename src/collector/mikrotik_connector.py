@@ -586,7 +586,7 @@ class MikroTikAPIPool:
 
 
 # Instância global do pool
-mikrotik_api_pool = MikroTikAPIPool(max_connections_per_host=config.MAX_API_CONNECTIONS)
+mikrotik_api_pool = MikroTikAPIPool(max_connections_per_host=config.MAX_CONNECTIONS_PER_HOST)
 
 
 # Interface compatível com o sistema existente
