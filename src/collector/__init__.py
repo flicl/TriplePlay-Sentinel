@@ -11,11 +11,11 @@ Componentes principais:
 - config: Configurações centralizadas do sistema
 - models: Modelos de dados e estruturas
 - cache: Sistema de cache inteligente com TTL
-- mikrotik: Conector SSH para dispositivos MikroTik
+- mikrotik_connector: Conector API nativo para dispositivos MikroTik
 - processor: Processador de resultados de testes
-- app: Aplicação Flask principal com API REST
+- sentinel_api_server: Aplicação Flask principal com API REST
 
-Versão: 2.0.0
+Versão: 2.1.0
 """
 
 __version__ = "2.0.0"

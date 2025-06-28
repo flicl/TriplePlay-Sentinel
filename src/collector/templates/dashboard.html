@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TriplePlay-Sentinel Dashboard</title>
+    <title>TriplePlay-Sentinel API Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -55,7 +55,7 @@
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">
                 <i class="fas fa-shield-alt"></i>
-                TriplePlay-Sentinel Dashboard
+                TriplePlay-Sentinel API Dashboard
             </span>
             <div class="d-flex align-items-center">
                 <div class="me-3">
@@ -148,15 +148,15 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card card-metric danger">
+                <div class="card card-metric success">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h6 class="card-title text-muted">Conexões SSH</h6>
-                                <h4 id="ssh-connections">--</h4>
+                                <h6 class="card-title text-muted">Conexões API</h6>
+                                <h4 id="api-connections">--</h4>
                             </div>
-                            <div class="text-danger">
-                                <i class="fas fa-network-wired fa-2x"></i>
+                            <div class="text-success">
+                                <i class="fas fa-plug fa-2x"></i>
                             </div>
                         </div>
                     </div>
@@ -193,20 +193,20 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="mikrotik-user" class="form-label">Usuário SSH</label>
+                                        <label for="mikrotik-user" class="form-label">Usuário API</label>
                                         <input type="text" class="form-control" id="mikrotik-user" placeholder="admin" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="mikrotik-password" class="form-label">Senha SSH</label>
+                                        <label for="mikrotik-password" class="form-label">Senha API</label>
                                         <input type="password" class="form-control" id="mikrotik-password" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="mb-3">
-                                        <label for="mikrotik-port" class="form-label">Porta SSH</label>
-                                        <input type="number" class="form-control" id="mikrotik-port" value="22" min="1" max="65535" placeholder="22">
+                                        <label for="mikrotik-port" class="form-label">Porta API</label>
+                                        <input type="number" class="form-control" id="mikrotik-port" value="8728" min="1" max="65535" placeholder="8728">
                                     </div>
                                 </div>
                             </div>

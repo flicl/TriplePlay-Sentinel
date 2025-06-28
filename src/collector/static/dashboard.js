@@ -159,9 +159,9 @@ class SentinelDashboard {
         const cacheHitRate = data.cache?.hit_rate_percent || 0;
         document.getElementById('cache-hits').textContent = `${cacheHitRate}%`;
 
-        // Conexões SSH
-        const sshConnections = data.connections?.active_ssh || 0;
-        document.getElementById('ssh-connections').textContent = sshConnections;
+        // Conexões API
+        const apiConnections = data.connections?.active_api || 0;
+        document.getElementById('api-connections').textContent = apiConnections;
     }
 
     updateDetailedStats(data) {
@@ -181,9 +181,9 @@ class SentinelDashboard {
                 <div class="col-6">
                     <h6 class="text-muted">Conexões</h6>
                     <ul class="list-unstyled">
-                        <li><strong>Ativas:</strong> ${data.connections?.active_ssh || 0}</li>
+                        <li><strong>Ativas:</strong> ${data.connections?.active_api || 0}</li>
                         <li><strong>Total:</strong> ${data.connections?.total_connections || 0}</li>
-                        <li><strong>Reuso:</strong> ${data.connections?.reuse_rate_percent?.toFixed(1) || 0}%</li>
+                        <li><strong>Pool:</strong> ${data.connections?.pool_size || 0}</li>
                         <li><strong>Falhas:</strong> ${data.connections?.failed_connections || 0}</li>
                     </ul>
                 </div>
@@ -255,7 +255,7 @@ class SentinelDashboard {
             mikrotik_host: document.getElementById('mikrotik-host').value,
             mikrotik_user: document.getElementById('mikrotik-user').value,
             mikrotik_password: document.getElementById('mikrotik-password').value,
-            mikrotik_port: parseInt(document.getElementById('mikrotik-port').value) || 22,
+            mikrotik_port: parseInt(document.getElementById('mikrotik-port').value) || 8728,
             test_type: document.getElementById('test-type').value,
             target: document.getElementById('target').value,
             count: 4,
