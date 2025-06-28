@@ -215,29 +215,45 @@ class SentinelDashboard {
         
         // Atualiza botão para estado de loading
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Executando...';
+        const isMultiple = this.getFormData().targets.length > 1;
+        const loadingText = isMultiple ? 
+            `<span class="spinner-border spinner-border-sm" role="status"></span> Executando batch (${this.getFormData().targets.length} targets)...` :
+            '<span class="spinner-border spinner-border-sm" role="status"></span> Executando...';
+        btn.innerHTML = loadingText;
 
         try {
             const formData = this.getFormData();
             
-            const response = await fetch(`${this.baseUrl}/api/test`, {
-                method: 'POST',
-                headers: this.getAuthHeaders(),
-                body: JSON.stringify(formData)
-            });
-
-            if (response.status === 401) {
-                this.showNotification('Erro: API Key inválida ou expirada', 'danger');
-                return;
-            }
-
-            const result = await response.json();
-            
-            if (response.ok) {
-                this.addTestResult(result);
-                this.showNotification('Teste executado com sucesso!', 'success');
+            // Se múltiplos targets, executa batch
+            if (formData.targets.length > 1) {
+                await this.runBatchTest(formData);
             } else {
-                this.showNotification(`Erro: ${result.message}`, 'danger');
+                // Teste único (compatibilidade com API existente)
+                const singleFormData = {
+                    ...formData,
+                    target: formData.targets[0]
+                };
+                delete singleFormData.targets;
+                
+                const response = await fetch(`${this.baseUrl}/api/test`, {
+                    method: 'POST',
+                    headers: this.getAuthHeaders(),
+                    body: JSON.stringify(singleFormData)
+                });
+
+                if (response.status === 401) {
+                    this.showNotification('Erro: API Key inválida ou expirada', 'danger');
+                    return;
+                }
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    this.addTestResult(result);
+                    this.showNotification('Teste executado com sucesso!', 'success');
+                } else {
+                    this.showNotification(`Erro: ${result.message}`, 'danger');
+                }
             }
             
         } catch (error) {
@@ -250,18 +266,73 @@ class SentinelDashboard {
         }
     }
 
+    async runBatchTest(formData) {
+        const batchData = {
+            mikrotik_host: formData.mikrotik_host,
+            mikrotik_user: formData.mikrotik_user,
+            mikrotik_password: formData.mikrotik_password,
+            mikrotik_port: formData.mikrotik_port,
+            test_type: formData.test_type,
+            targets: formData.targets,
+            count: formData.count
+        };
+
+        try {
+            const response = await fetch(`${this.baseUrl}/api/batch-test`, {
+                method: 'POST',
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify(batchData)
+            });
+
+            if (response.status === 401) {
+                this.showNotification('Erro: API Key inválida ou expirada', 'danger');
+                return;
+            }
+
+            const results = await response.json();
+            
+            if (response.ok) {
+                // Adiciona cada resultado individual
+                if (results.results) {
+                    Object.entries(results.results).forEach(([target, result]) => {
+                        this.addTestResult({
+                            ...result,
+                            target: target,
+                            batch_id: results.batch_id || `batch-${Date.now()}`
+                        });
+                    });
+                    const count = Object.keys(results.results).length;
+                    this.showNotification(`Batch test executado: ${count} targets testados!`, 'success');
+                }
+            } else {
+                this.showNotification(`Erro no batch test: ${results.message}`, 'danger');
+            }
+        } catch (error) {
+            console.error('Erro no batch test:', error);
+            this.showNotification('Erro de conexão no batch test', 'danger');
+        }
+    }
+
     getFormData() {
+        const targets = document.getElementById('target').value;
         return {
             mikrotik_host: document.getElementById('mikrotik-host').value,
             mikrotik_user: document.getElementById('mikrotik-user').value,
             mikrotik_password: document.getElementById('mikrotik-password').value,
             mikrotik_port: parseInt(document.getElementById('mikrotik-port').value) || 8728,
             test_type: document.getElementById('test-type').value,
-            target: document.getElementById('target').value,
+            targets: this.parseTargets(targets),
             count: 4,
             size: 64,
             interval: 1
         };
+    }
+
+    parseTargets(targetsString) {
+        return targetsString
+            .split(',')
+            .map(target => target.trim())
+            .filter(target => target.length > 0);
     }
 
     addTestResult(result) {
@@ -281,6 +352,7 @@ class SentinelDashboard {
         this.testResults.slice(0, 10).forEach((result, index) => {
             const statusClass = result.status === 'success' ? 'success' : 'danger';
             const cacheIcon = result.cache_hit ? '<i class="fas fa-tachometer-alt text-warning" title="Cache Hit"></i>' : '';
+            const batchIcon = result.batch_id ? '<i class="fas fa-layer-group text-info" title="Batch Test"></i>' : '';
             
             html += `
                 <div class="card mb-2">
@@ -289,7 +361,7 @@ class SentinelDashboard {
                             <span class="badge bg-${statusClass}">${result.status}</span>
                             <strong>${result.test_type.toUpperCase()}</strong>
                             ${result.mikrotik_host} → ${result.target}
-                            ${cacheIcon}
+                            ${cacheIcon} ${batchIcon}
                         </div>
                         <small class="text-muted">${new Date(result.timestamp).toLocaleString()}</small>
                     </div>
@@ -412,11 +484,14 @@ class SentinelDashboard {
 }
 
 // Funções globais
+function setTargets(targets) {
+    document.getElementById('target').value = targets;
+}
+
 function clearResults() {
-    if (confirm('Tem certeza que deseja limpar todos os resultados?')) {
-        window.dashboard.testResults = [];
-        window.dashboard.updateTestResultsDisplay();
-        window.dashboard.showNotification('Resultados limpos', 'info');
+    if (window.sentinelDashboard) {
+        window.sentinelDashboard.testResults = [];
+        window.sentinelDashboard.updateTestResultsDisplay();
     }
 }
 

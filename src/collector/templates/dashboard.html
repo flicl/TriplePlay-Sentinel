@@ -213,8 +213,22 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="mb-3">
-                                        <label for="target" class="form-label">Alvo do Teste</label>
-                                        <input type="text" class="form-control" id="target" placeholder="8.8.8.8" required>
+                                        <label for="target" class="form-label">
+                                            Alvo(s) do Teste 
+                                            <small class="text-muted">(múltiplos IPs separados por vírgula)</small>
+                                        </label>
+                                        <textarea class="form-control" id="target" rows="3" placeholder="8.8.8.8, 1.1.1.1, 8.8.4.4" required></textarea>
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Exemplos: <code>8.8.8.8</code> ou <code>8.8.8.8, 1.1.1.1, google.com</code>
+                                            <br>
+                                            <div class="mt-2">
+                                                <small class="text-muted">Atalhos:</small>
+                                                <button type="button" class="btn btn-sm btn-outline-primary ms-1" onclick="setTargets('8.8.8.8, 1.1.1.1')">DNS Públicos</button>
+                                                <button type="button" class="btn btn-sm btn-outline-success ms-1" onclick="setTargets('8.8.8.8, 1.1.1.1, 8.8.4.4, 1.0.0.1')">DNS Múltiplos</button>
+                                                <button type="button" class="btn btn-sm btn-outline-info ms-1" onclick="setTargets('google.com, github.com, cloudflare.com')">Sites Populares</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
