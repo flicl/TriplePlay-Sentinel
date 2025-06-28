@@ -110,11 +110,6 @@ docker run -d \
   --env REDIS_PORT=6379 \
   --env REDIS_DB=0 \
   --env CACHE_TTL=30 \
-  --env MIKROTIK_API_PORT=8728 \
-  --env MIKROTIK_API_TIMEOUT=30 \
-  --env MIKROTIK_USE_SSL=false \
-  --env POOL_SIZE=10 \
-  --env MAX_BATCH_SIZE=50 \
   --env MAX_WORKERS=10 \
   --env REQUEST_TIMEOUT=60 \
   --env ENABLE_AUTH=true \
@@ -223,7 +218,7 @@ curl -H "X-API-Key: sua_chave_secreta_aqui" \
 ### Testar API MikroTik
 
 ```bash
-# Ping via API MikroTik
+# Ping via API MikroTik (porta padrão 8728)
 curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
      -H "Content-Type: application/json" \
      -d '{
@@ -235,17 +230,45 @@ curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
      }' \
      http://localhost:58500/api/v2/mikrotik/ping
 
-# Comando MikroTik via API
+# Ping via API MikroTik (porta customizada)
+curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "host": "192.168.1.1",
+       "username": "admin", 
+       "password": "senha",
+       "port": 8729,
+       "use_ssl": true,
+       "targets": ["8.8.8.8", "1.1.1.1"],
+       "count": 4
+     }' \
+     http://localhost:58500/api/v2/mikrotik/ping
+
+# Comando MikroTik via API (porta customizada)
 curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
      -H "Content-Type: application/json" \
      -d '{
        "host": "192.168.1.1",
        "username": "admin",
-       "password": "senha", 
+       "password": "senha",
+       "port": 8729,
+       "use_ssl": true,
        "command": "/system/identity/print",
        "parameters": {}
      }' \
      http://localhost:58500/api/v2/mikrotik/command
+
+# Testar conectividade com porta customizada
+curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "host": "192.168.1.1",
+       "username": "admin",
+       "password": "senha",
+       "port": 8729,
+       "use_ssl": true
+     }' \
+     http://localhost:58500/api/v2/test-connection
 ```
 ```
 
@@ -335,10 +358,38 @@ docker stats
 # --memory="256m" para o sentinel
 ```
 
-## 📝 Notas Importantes (API-Only)
+## � Configuração de Porta MikroTik
+
+**Importante:** A porta da API MikroTik é especificada **no request**, não como variável de ambiente. Isso permite conectar a diferentes MikroTiks com portas diferentes:
+
+### ✅ Correto: Porta no Request
+```json
+{
+  "host": "192.168.1.1",
+  "username": "admin",
+  "password": "senha",
+  "port": 8729,          // ← Porta específica para este MikroTik
+  "use_ssl": true,
+  "targets": ["8.8.8.8"]
+}
+```
+
+### ❌ Incorreto: Porta como ENV (inflexível)
+```bash
+# Não faça isso - limita a um tipo de configuração
+--env MIKROTIK_API_PORT=8728
+```
+
+### 🎯 Benefícios dessa Abordagem:
+- **Flexibilidade**: Cada MikroTik pode usar porta diferente
+- **Multi-tenant**: Suporte a redes com configurações variadas  
+- **Compatibilidade**: Funciona com HTTP (8728) e HTTPS (8729)
+- **Dinâmico**: Sem necessidade de restart para diferentes portas
+
+## �📝 Notas Importantes (API-Only)
 
 1. **API MikroTik**: Configure a API no MikroTik: `/ip service enable api`
-2. **Porta API**: Padrão 8728 (HTTP) ou 8729 (HTTPS) 
+2. **Porta API**: Especificada por request - 8728 (HTTP) ou 8729 (HTTPS) 
 3. **librouteros**: Biblioteca nativa Python para máxima performance
 4. **Pool de Conexões**: Reutiliza conexões para eficiência
 5. **Sem SSH**: Zero dependências SSH, mais seguro e rápido
