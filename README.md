@@ -2,19 +2,7 @@
 
 <div align="center">
 
-![Version](https# Clone repository
-git clone https://github.com/flicl/TriplePlay-Sentinel.git
-cd TriplePlay-Sentinel
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your settings
-
-# Deploy system
-docker-compose up --build -d
-
-# Verify deployment
-curl http://localhost:5000/api/healths.io/badge/version-2.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
 ![Status](https://img.shields.io/badge/status-Production%20Ready-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-blue.svg)
