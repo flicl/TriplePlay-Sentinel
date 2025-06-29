@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TriplePlay-Sentinel API Dashboard</title>
+    <title>Dashboard Sentinel API</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         .card-metric {
             border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .card-metric:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
         .card-metric.success {
             border-left-color: #28a745;
@@ -48,15 +54,19 @@
             color: #fff;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
+        .navbar {
+            background: linear-gradient(135deg, #78909C 0%, #607D8B 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark">
+<body style="min-height: 100vh;">
+    <nav class="navbar navbar-dark">
         <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">
-                <i class="fas fa-shield-alt"></i>
-                TriplePlay-Sentinel API Dashboard
-            </span>
+            <a class="navbar-brand" href="#">
+                <img src="https://i.imgur.com/ER4wi56.png" alt="Sentinel Logo" height="30" class="d-inline-block align-top">
+                <span class="ms-2 d-none d-sm-inline">Dashboard Sentinel API</span>
+            </a>
             <div class="d-flex align-items-center">
                 <div class="me-3">
                     <div class="input-group input-group-sm api-key-input">
@@ -64,7 +74,7 @@
                             <i class="fas fa-key"></i>
                         </span>
                         <input type="password" class="form-control" id="api-key" placeholder="API Key" title="Digite sua API Key aqui">
-                        <button class="btn btn-outline-light btn-sm" type="button" id="save-api-key" title="Salvar API Key">
+                        <button class="btn btn-outline-light btn-sm" type="button" id="save-api-key" title="Salvar API Key" style="border-color: rgba(255,255,255,0.5);">
                             <i class="fas fa-save"></i>
                         </button>
                     </div>
@@ -167,7 +177,7 @@
         <div class="row">
             <!-- Test Panel -->
             <div class="col-md-6">
-                <div class="card">
+                <div class="card border-0 shadow-sm">
                     <div class="card-header">
                         <h5><i class="fas fa-play-circle"></i> Executar Teste</h5>
                     </div>
@@ -224,15 +234,15 @@
                                             <br>
                                             <div class="mt-2">
                                                 <small class="text-muted">Atalhos:</small>
-                                                <button type="button" class="btn btn-sm btn-outline-primary ms-1" onclick="setTargets('8.8.8.8, 1.1.1.1')">DNS Públicos</button>
-                                                <button type="button" class="btn btn-sm btn-outline-success ms-1" onclick="setTargets('8.8.8.8, 1.1.1.1, 8.8.4.4, 1.0.0.1')">DNS Múltiplos</button>
-                                                <button type="button" class="btn btn-sm btn-outline-info ms-1" onclick="setTargets('google.com, github.com, cloudflare.com')">Sites Populares</button>
+                                                <button type="button" class="btn btn-sm btn-outline-primary ms-1 shadow-sm" onclick="setTargets('8.8.8.8, 1.1.1.1')">DNS Públicos</button>
+                                                <button type="button" class="btn btn-sm btn-outline-success ms-1 shadow-sm" onclick="setTargets('8.8.8.8, 1.1.1.1, 8.8.4.4, 1.0.0.1')">DNS Múltiplos</button>
+                                                <button type="button" class="btn btn-sm btn-outline-info ms-1 shadow-sm" onclick="setTargets('google.com, github.com, cloudflare.com')">Sites Populares</button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary" id="run-test-btn">
+                            <button type="submit" class="btn btn-primary shadow-sm" id="run-test-btn" style="background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); border: none;">
                                 <i class="fas fa-play"></i> Executar Teste
                             </button>
                         </form>

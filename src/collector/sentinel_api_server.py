@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
-TriplePlay-Sentinel Collector - API-Only Application
-Sistema de Monitoramento 100% baseado na API MikroTik (sem SSH)
+TriplePlay-Sentinel Collector - Network Monitoring API
+Professional network monitoring and management system
 
-Este é o módulo principal otimizado para máxima performance e concorrência
-usando exclusivamente a API REST do MikroTik.
+High-performance MikroTik monitoring with advanced concurrency support.
 """
 
 import os
@@ -20,6 +19,12 @@ from typing import Dict, Any, List
 from functools import wraps
 import json
 
+# Import version from package
+try:
+    from . import __version__
+except ImportError:
+    __version__ = "2.1.0"
+
 # Adiciona o diretório do collector ao Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -27,30 +32,26 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-from sentinel_config import config_api
-from mikrotik_connector import MikroTikConnector
+from sentinel_config import config
+from mikrotik_connector import mikrotik_connector
 
 # Configuração de logging
 logging.basicConfig(
-    level=getattr(logging, config_api.LOG_LEVEL),
+    level=getattr(logging, config.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(config_api.LOG_FILE) if config_api.LOG_FILE else logging.NullHandler()
+        logging.FileHandler(config.LOG_FILE) if config.LOG_FILE else logging.NullHandler()
     ]
 )
-logger = logging.getLogger('sentinel-api-collector')
+logger = logging.getLogger('sentinel-collector')
 
 # Inicialização do Flask
 app = Flask(__name__)
 CORS(app)
 
-# Inicializa o pool de conexões MikroTik
-mikrotik_connector = MikroTikConnector(
-    pool_size=config_api.MAX_CONNECTIONS_PER_HOST,
-    timeout=config_api.MIKROTIK_API_TIMEOUT,
-    max_batch_size=config_api.MAX_CONCURRENT_COMMANDS
-)
+# Usa o conector MikroTik otimizado
+# mikrotik_connector já está instanciado no módulo
 
 # Estatísticas globais da aplicação
 app_stats = {
@@ -128,11 +129,10 @@ def health_check():
     
     return jsonify({
         'status': 'healthy',
-        'service': 'TriplePlay-Sentinel API-Only Collector',
-        'version': '2.0.0',
+        'service': 'TriplePlay-Sentinel Collector',
+        'version': __version__,
         'uptime_seconds': uptime.total_seconds(),
         'timestamp': datetime.now().isoformat(),
-        'mode': 'API-Only (No SSH)',
         'performance': {
             'total_requests': app_stats['total_requests'],
             'active_requests': app_stats['active_requests'],
@@ -142,6 +142,13 @@ def health_check():
             'avg_response_time_seconds': app_stats['avg_response_time']
         }
     })
+
+
+@app.route('/api/health', methods=['GET'])
+@track_request_stats
+def api_health_check():
+    """Endpoint de health check da aplicação (alias da API)"""
+    return health_check()
 
 
 @app.route('/api/v2/mikrotik/ping', methods=['POST'])
@@ -234,7 +241,7 @@ def ping_targets():
         
         return jsonify({
             'status': 'completed',
-            'method': 'API_BATCH',
+            'method': 'BATCH_PROCESSING',
             'host': host,
             'targets_requested': len(targets),
             'targets_successful': successful_pings,
@@ -243,8 +250,7 @@ def ping_targets():
                 max(r.get('execution_time_seconds', 0) for r in batch_results)
             ),
             'results': ping_results,
-            'timestamp': datetime.now().isoformat(),
-            'performance_improvement': f'~{len(targets)}x faster than sequential'
+            'timestamp': datetime.now().isoformat()
         })
         
     except Exception as e:
@@ -343,8 +349,8 @@ def execute_batch():
             return jsonify({'error': 'Commands deve ser uma lista não vazia'}), 400
         
         max_concurrent = min(
-            data.get('max_concurrent', config_api.MAX_CONCURRENT_COMMANDS),
-            config_api.MAX_CONCURRENT_COMMANDS
+            data.get('max_concurrent', config.MAX_CONCURRENT_COMMANDS),
+            config.MAX_CONCURRENT_COMMANDS
         )
         
         # Executa batch via API
@@ -367,7 +373,7 @@ def execute_batch():
         
         return jsonify({
             'status': 'completed',
-            'method': 'API_BATCH_PARALLEL',
+            'method': 'BATCH_PARALLEL',
             'commands_requested': len(commands),
             'commands_successful': successful_commands,
             'max_concurrent': max_concurrent,
@@ -420,8 +426,8 @@ def execute_multi_host():
         command = data['command']
         parameters = data.get('parameters', {})
         max_concurrent_hosts = min(
-            data.get('max_concurrent_hosts', config_api.MAX_CONCURRENT_HOSTS),
-            config_api.MAX_CONCURRENT_HOSTS
+            data.get('max_concurrent_hosts', config.MAX_CONCURRENT_HOSTS),
+            config.MAX_CONCURRENT_HOSTS
         )
         
         # Executa em múltiplos hosts
@@ -442,7 +448,7 @@ def execute_multi_host():
         
         return jsonify({
             'status': 'completed',
-            'method': 'API_MULTI_HOST_PARALLEL',
+            'method': 'MULTI_HOST_PARALLEL',
             'hosts_requested': len(hosts),
             'hosts_successful': successful_hosts,
             'max_concurrent_hosts': max_concurrent_hosts,
@@ -495,8 +501,8 @@ def test_connection():
                 host=data['host'],
                 username=data['username'],
                 password=data['password'],
-                port=data.get('port', config_api.MIKROTIK_API_PORT),
-                use_ssl=data.get('use_ssl', config_api.MIKROTIK_USE_SSL)
+                port=data.get('port', 8728),  # Default para HTTP
+                use_ssl=data.get('use_ssl', False)  # Default para HTTP
             )
         )
         
@@ -520,9 +526,8 @@ def get_stats():
         
         return jsonify({
             'application': {
-                'service': 'TriplePlay-Sentinel API-Only Collector',
-                'version': '2.0.0',
-                'mode': 'API-Only (No SSH)',
+                'service': 'TriplePlay-Sentinel Collector',
+                'version': '2.1.0',
                 'uptime_seconds': app_uptime.total_seconds(),
                 'start_time': app_stats['start_time'].isoformat(),
                 'total_requests': app_stats['total_requests'],
@@ -537,12 +542,11 @@ def get_stats():
             },
             'mikrotik_connector': mikrotik_connector.get_stats(),
             'configuration': {
-                'max_concurrent_hosts': config_api.MAX_CONCURRENT_HOSTS,
-                'max_concurrent_commands': config_api.MAX_CONCURRENT_COMMANDS,
-                'max_connections_per_host': config_api.MAX_CONNECTIONS_PER_HOST,
-                'cache_ttl_seconds': config_api.CACHE_TTL,
-                'mikrotik_timeout': config_api.MIKROTIK_API_TIMEOUT,
-                'mikrotik_use_ssl': config_api.MIKROTIK_USE_SSL
+                'max_concurrent_hosts': config.MAX_CONCURRENT_HOSTS,
+                'max_concurrent_commands': config.MAX_CONCURRENT_COMMANDS,
+                'max_connections_per_host': config.MAX_CONNECTIONS_PER_HOST,
+                'cache_ttl_seconds': config.CACHE_TTL,
+                'mikrotik_timeout': config.MIKROTIK_API_TIMEOUT
             },
             'timestamp': datetime.now().isoformat()
         })
@@ -576,36 +580,111 @@ def clear_cache():
         }), 500
 
 
-@app.route('/', methods=['GET'])
-def index():
-    """Página inicial com informações do sistema"""
-    uptime = datetime.now() - app_stats['start_time']
+@app.route('/api/batch-test', methods=['POST'])
+@track_request_stats
+def batch_test():
+    """
+    Executa testes de conectividade em batch (ping/traceroute)
     
-    return jsonify({
-        'service': 'TriplePlay-Sentinel API-Only Collector',
-        'version': '2.0.0',
-        'description': 'Sistema de Monitoramento 100% baseado na API MikroTik (sem SSH)',
-        'mode': 'API-Only',
-        'performance': 'Máxima concorrência e performance',
-        'uptime_seconds': uptime.total_seconds(),
-        'status': 'running',
-        'endpoints': {
-            'health': '/health',
-            'ping': '/api/v2/mikrotik/ping',
-            'command': '/api/v2/mikrotik/command',
-            'batch': '/api/v2/mikrotik/batch',
-            'multi-host': '/api/v2/mikrotik/multi-host',
-            'test-connection': '/api/v2/test-connection',
-            'stats': '/api/v2/stats',
-            'clear-cache': '/api/v2/cache/clear'
-        },
-        'timestamp': datetime.now().isoformat()
-    })
+    Body JSON:
+    {
+        "mikrotik_host": "192.168.1.1",
+        "mikrotik_user": "admin",
+        "mikrotik_password": "password",
+        "mikrotik_port": 8728,
+        "test_type": "ping",
+        "targets": ["8.8.8.8", "1.1.1.1"],
+        "count": 4
+    }
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'JSON body required'}), 400
+        
+        # Validação
+        required_fields = ['mikrotik_host', 'mikrotik_user', 'mikrotik_password', 'test_type', 'targets']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Campo obrigatório: {field}'}), 400
+        
+        targets = data['targets']
+        if not isinstance(targets, list) or not targets:
+            return jsonify({'error': 'Targets deve ser uma lista não vazia'}), 400
+        
+        # Prepara dados para ping
+        ping_data = {
+            'host': data['mikrotik_host'],
+            'username': data['mikrotik_user'],
+            'password': data['mikrotik_password'],
+            'port': data.get('mikrotik_port', 8728),
+            'targets': targets,
+            'count': data.get('count', 4),
+            'use_cache': True
+        }
+        
+        batch_id = f"batch-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        
+        if data['test_type'] == 'ping':
+            # Usa o endpoint de ping existente
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            results = loop.run_until_complete(
+                mikrotik_connector.ping_targets(
+                    host=ping_data['host'],
+                    username=ping_data['username'],
+                    password=ping_data['password'],
+                    targets=ping_data['targets'],
+                    count=ping_data['count'],
+                    use_cache=ping_data['use_cache']
+                )
+            )
+            
+            # Reformata para o formato esperado pelo dashboard
+            formatted_results = {}
+            for target, result in results.items():
+                formatted_results[target] = {
+                    'status': result.get('status', 'error'),
+                    'test_type': 'ping',
+                    'mikrotik_host': ping_data['host'],
+                    'target': target,
+                    'timestamp': datetime.now().isoformat(),
+                    'results': result,
+                    'batch_id': batch_id
+                }
+            
+            return jsonify({
+                'status': 'completed',
+                'batch_id': batch_id,
+                'test_type': data['test_type'],
+                'targets_tested': len(targets),
+                'targets_successful': sum(1 for r in formatted_results.values() if r['status'] == 'success'),
+                'results': formatted_results,
+                'timestamp': datetime.now().isoformat()
+            })
+        
+        else:
+            return jsonify({'error': f'Tipo de teste não suportado: {data["test_type"]}'}), 400
+            
+    except Exception as e:
+        logger.error(f"Erro no batch test: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    """Dashboard web interativo para testes e monitoramento"""
+    return render_template('dashboard.html')
 
 
 def cleanup_on_exit():
     """Limpeza ao encerrar a aplicação"""
-    logger.info("Encerrando TriplePlay-Sentinel API-Only Collector...")
+    logger.info("Encerrando TriplePlay-Sentinel Collector...")
     
     # Fecha todas as sessões HTTP
     loop = asyncio.new_event_loop()
@@ -629,17 +708,15 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 
 if __name__ == '__main__':
-    logger.info("Iniciando TriplePlay-Sentinel API-Only Collector v2.0.0")
-    logger.info(f"Modo: API-Only (100% MikroTik API, sem SSH)")
-    logger.info(f"Concorrência máxima: {config_api.MAX_CONCURRENT_HOSTS} hosts, {config_api.MAX_CONCURRENT_COMMANDS} comandos")
-    logger.info(f"Cache TTL: {config_api.CACHE_TTL}s")
-    logger.info(f"API MikroTik: {'HTTPS' if config_api.MIKROTIK_USE_SSL else 'HTTP'}:{config_api.MIKROTIK_API_PORT}")
+    logger.info("Iniciando TriplePlay-Sentinel Collector v2.1.0")
+    logger.info(f"Concorrência máxima: {config.MAX_CONCURRENT_HOSTS} hosts, {config.MAX_CONCURRENT_COMMANDS} comandos")
+    logger.info(f"Cache TTL: {config.CACHE_TTL}s")
     
     try:
         app.run(
-            host=config_api.API_HOST,
-            port=config_api.API_PORT,
-            debug=config_api.DEBUG,
+            host=config.API_HOST,
+            port=config.API_PORT,
+            debug=config.DEBUG,
             threaded=True
         )
     except Exception as e:

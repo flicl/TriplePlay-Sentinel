@@ -1,21 +1,21 @@
-# TriplePlay-Sentinel - API-Only Requirements
-# Sistema de Monitoramento 100% baseado na API MikroTik (sem SSH)
+# TriplePlay-Sentinel Collector Requirements
+# Professional network monitoring system
 
 # Web Framework
 Flask==3.0.0
 Flask-CORS==4.0.0
 
-# API MikroTik - Biblioteca oficial e robusta
+# MikroTik API - Official and robust library
 librouteros==3.2.1
 
-# Cache Redis para alta performance
+# Redis Cache for high performance
 redis==4.6.0
 
-# JSON e Data Processing
+# JSON and Data Processing
 ujson==5.8.0
 dataclasses-json==0.6.1
 
-# Concurrency e Async
+# Concurrency and Async
 asyncio-throttle==1.0.2
 
 # HTTP Client
@@ -24,11 +24,11 @@ requests==2.31.0
 # Caching
 cachetools==5.3.2
 
-# Servidor WSGI para produção
+# Production WSGI Server
 gunicorn==21.2.0
 gevent==23.7.0
 
-# Logging estruturado
+# Structured Logging
 structlog==23.2.0
 
 # Utilitários

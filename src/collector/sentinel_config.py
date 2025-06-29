@@ -1,40 +1,37 @@
 #!/usr/bin/env python3
 """
-TriplePlay-Sentinel - Configurações API-Only
-Sistema de Monitoramento 100% baseado na API MikroTik (sem SSH)
+TriplePlay-Sentinel - System Configuration
+Network Monitoring and Management System
 """
 
 import os
 from typing import Dict, Any
 
 
-class ConfigAPIOnly:
-    """Configurações centralizadas do sistema API-only"""
+class SentinelConfig:
+    """Configurações centralizadas do sistema"""
     
     # Configurações da API
     API_HOST = os.getenv('COLLECTOR_HOST', '0.0.0.0')
     API_PORT = int(os.getenv('COLLECTOR_PORT', '5000'))
     ENABLE_HTTPS = os.getenv('ENABLE_HTTPS', 'false').lower() == 'true'
     
-    # Configurações de Cache
-    CACHE_TTL = int(os.getenv('CACHE_TTL', '30'))  # 30 segundos
-    MAX_CACHE_SIZE = int(os.getenv('MAX_CACHE_SIZE', '1000'))
+    # Configurações de Cache - Otimizado para muitas requisições por host
+    CACHE_TTL = int(os.getenv('CACHE_TTL', '15'))  # Cache menor para resultados mais frescos
+    MAX_CACHE_SIZE = int(os.getenv('MAX_CACHE_SIZE', '5000'))  # Cache maior para mais resultados
     
-    # Configurações MikroTik API
-    MIKROTIK_API_PORT = int(os.getenv('MIKROTIK_API_PORT', '8728'))  # HTTPS API
-    MIKROTIK_API_PORT_HTTP = int(os.getenv('MIKROTIK_API_PORT_HTTP', '8729'))  # HTTP API
-    MIKROTIK_USE_SSL = os.getenv('MIKROTIK_USE_SSL', 'true').lower() == 'true'
+    # Configurações MikroTik (valores padrão - porta especificada por request)
     MIKROTIK_API_TIMEOUT = int(os.getenv('MIKROTIK_API_TIMEOUT', '30'))
     MIKROTIK_MAX_RETRIES = int(os.getenv('MIKROTIK_MAX_RETRIES', '3'))
     
-    # Configurações de Concorrência
-    MAX_CONCURRENT_HOSTS = int(os.getenv('MAX_CONCURRENT_HOSTS', '50'))
-    MAX_CONCURRENT_COMMANDS = int(os.getenv('MAX_CONCURRENT_COMMANDS', '20'))
-    MAX_CONNECTIONS_PER_HOST = int(os.getenv('MAX_CONNECTIONS_PER_HOST', '10'))
+    # Configurações de Concorrência - Otimizado para poucos MikroTiks com muitas requisições cada
+    MAX_CONCURRENT_HOSTS = int(os.getenv('MAX_CONCURRENT_HOSTS', '15'))  # Máximo 15 MikroTiks simultâneos
+    MAX_CONCURRENT_COMMANDS = int(os.getenv('MAX_CONCURRENT_COMMANDS', '200'))  # 200 comandos por MikroTik
+    MAX_CONNECTIONS_PER_HOST = int(os.getenv('MAX_CONNECTIONS_PER_HOST', '50'))  # 50 conexões por MikroTik
     
-    # Configurações de Performance
-    MAX_WORKERS = int(os.getenv('MAX_WORKERS', '20'))
-    REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '60'))
+    # Configurações de Performance - Ajustado para alta carga por MikroTik
+    MAX_WORKERS = int(os.getenv('MAX_WORKERS', '50'))  # Mais workers para processar requisições
+    REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '120'))  # Timeout maior para traceroute
     
     # Configurações de Segurança
     API_KEY = os.getenv('API_KEY')  # Opcional para autenticação
@@ -70,9 +67,6 @@ class ConfigAPIOnly:
             'enable_https': cls.ENABLE_HTTPS,
             'cache_ttl': cls.CACHE_TTL,
             'max_cache_size': cls.MAX_CACHE_SIZE,
-            'mikrotik_api_port': cls.MIKROTIK_API_PORT,
-            'mikrotik_api_port_http': cls.MIKROTIK_API_PORT_HTTP,
-            'mikrotik_use_ssl': cls.MIKROTIK_USE_SSL,
             'mikrotik_api_timeout': cls.MIKROTIK_API_TIMEOUT,
             'mikrotik_max_retries': cls.MIKROTIK_MAX_RETRIES,
             'max_concurrent_hosts': cls.MAX_CONCURRENT_HOSTS,
@@ -89,5 +83,5 @@ class ConfigAPIOnly:
         }
 
 
-# Instância global de configuração API-only
-config_api = ConfigAPIOnly()
+# Instância global de configuração
+config = SentinelConfig()

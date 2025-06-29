@@ -1,6 +1,6 @@
 #!/bin/bash
-# TriplePlay-Sentinel Collector - Script de Inicialização
-# Sistema de Monitoramento Centralizado MikroTik-Zabbix via HTTP Agent (PULL)
+# TriplePlay-Sentinel Collector - Production Startup Script
+# Professional network monitoring system with Gunicorn WSGI server
 
 set -e
 
@@ -30,7 +30,7 @@ warning() {
 
 # Banner
 cat << 'EOF'
-🛡️  TriplePlay-Sentinel Collector v2.0
+🛡️  TriplePlay-Sentinel Collector v2.1.0
 =============================================
 Sistema de Monitoramento Centralizado
 MikroTik-Zabbix via HTTP Agent (PULL)
@@ -101,13 +101,29 @@ install_dependencies() {
 check_connectivity() {
     log "Verificando conectividade básica..."
     
-    # Testa resolução DNS
-    if ! nslookup google.com > /dev/null 2>&1; then
-        warning "Resolução DNS pode estar com problemas"
+    # Testa resolução DNS com diferentes métodos
+    DNS_OK=false
+    
+    # Tenta nslookup
+    if command -v nslookup &> /dev/null && nslookup google.com > /dev/null 2>&1; then
+        DNS_OK=true
+    # Tenta dig se disponível
+    elif command -v dig &> /dev/null && dig +short google.com > /dev/null 2>&1; then
+        DNS_OK=true
+    # Tenta host se disponível
+    elif command -v host &> /dev/null && host google.com > /dev/null 2>&1; then
+        DNS_OK=true
+    # Tenta getent se disponível
+    elif command -v getent &> /dev/null && getent hosts google.com > /dev/null 2>&1; then
+        DNS_OK=true
+    fi
+    
+    if [ "$DNS_OK" = false ]; then
+        warning "Resolução DNS pode estar com problemas - verificação será feita durante a execução"
     fi
     
     # Verifica se a porta está disponível
-    if netstat -tuln 2>/dev/null | grep -q ":${COLLECTOR_PORT} "; then
+    if command -v netstat &> /dev/null && netstat -tuln 2>/dev/null | grep -q ":${COLLECTOR_PORT} "; then
         warning "Porta ${COLLECTOR_PORT} já está em uso"
     fi
 }
@@ -153,18 +169,8 @@ run_production() {
     cd "${SCRIPT_DIR}"
     
     exec gunicorn \
-        --workers=${WORKERS} \
-        --timeout=${TIMEOUT} \
-        --bind=${COLLECTOR_HOST}:${COLLECTOR_PORT} \
-        --worker-class=gevent \
-        --worker-connections=1000 \
-        --max-requests=1000 \
-        --max-requests-jitter=100 \
-        --preload \
-        --access-logfile=- \
-        --error-logfile=- \
-        --log-level=${LOG_LEVEL,,} \
-        app:app
+        --config=${SCRIPT_DIR}/gunicorn.conf.py \
+        sentinel_api_server:app
 }
 
 # Função para mostrar ajuda

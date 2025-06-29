@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-TriplePlay-Sentinel - Conector MikroTik API-Only
-Sistema 100% baseado na API MikroTik usando librouteros
+TriplePlay-Sentinel - MikroTik Connector
+Network monitoring and management system
 """
 
 import time
 import threading
 import logging
+import asyncio
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import librouteros
 from librouteros.query import Key
-from sentinel_config import config_api as config
+from sentinel_config import config
 
-logger = logging.getLogger('sentinel-mikrotik-api')
+logger = logging.getLogger('sentinel-mikrotik-connector')
 
 
 class MikroTikAPIConnection:
@@ -115,7 +117,7 @@ class MikroTikAPIConnection:
             raise Exception(f"Erro na execução do ping: {e}")
     
     def execute_batch_ping(self, addresses: List[str], count: int = 4, size: int = 64) -> Dict[str, Dict[str, Any]]:
-        """Executa múltiplos pings simultaneamente"""
+        """Executa múltiplos pings VERDADEIRAMENTE em paralelo usando API MikroTik"""
         if not self.connected or not self.connection:
             raise Exception("Conexão não estabelecida")
         
@@ -124,15 +126,31 @@ class MikroTikAPIConnection:
         results = {}
         
         try:
-            # Para cada endereço, executa ping
+            # A API MikroTik suporta múltiplos comandos simultâneos!
+            # Vamos usar isso para máxima performance
+            
+            ping_generators = {}
+            active_pings = {}
+            
+            # Inicia todos os pings simultaneamente
             for address in addresses:
                 try:
-                    result = self.execute_ping(address, count, size)
-                    results[address] = {
-                        'status': 'success',
-                        'data': result
-                    }
+                    # Cria comando ping para este endereço
+                    ping_cmd = self.connection('/ping')
+                    
+                    # Inicia ping (retorna generator para resultados)
+                    ping_gen = ping_cmd(
+                        address=address,
+                        count=count,
+                        size=size,
+                        interval=1
+                    )
+                    
+                    ping_generators[address] = ping_gen
+                    active_pings[address] = []
+                    
                 except Exception as e:
+                    logger.error(f"Erro ao iniciar ping para {address}: {e}")
                     results[address] = {
                         'status': 'error',
                         'error': str(e),
@@ -144,21 +162,94 @@ class MikroTikAPIConnection:
                         }
                     }
             
+            # Coleta resultados de todos os pings simultaneamente
+            max_iterations = count * 2  # Limite de segurança
+            iteration = 0
+            
+            while ping_generators and iteration < max_iterations:
+                iteration += 1
+                
+                # Para cada ping ativo, tenta coletar próximo resultado
+                completed_addresses = []
+                
+                for address, ping_gen in list(ping_generators.items()):
+                    try:
+                        # Tenta obter próximo resultado (non-blocking)
+                        result = next(ping_gen)
+                        active_pings[address].append(result)
+                        
+                    except StopIteration:
+                        # Ping completado para este endereço
+                        completed_addresses.append(address)
+                        
+                    except Exception as e:
+                        # Erro neste ping específico
+                        logger.error(f"Erro durante ping para {address}: {e}")
+                        completed_addresses.append(address)
+                        if address not in results:
+                            results[address] = {
+                                'status': 'error',
+                                'error': str(e),
+                                'data': {
+                                    'packets_sent': 0,
+                                    'packets_received': 0,
+                                    'packet_loss_percent': 100.0,
+                                    'status': 'unreachable'
+                                }
+                            }
+                
+                # Remove pings completados
+                for address in completed_addresses:
+                    if address in ping_generators:
+                        del ping_generators[address]
+                
+                # Pequena pausa para evitar CPU 100%
+                if ping_generators:
+                    time.sleep(0.01)  # 10ms
+            
+            # Processa resultados coletados
+            for address, ping_results in active_pings.items():
+                if address not in results:  # Só processa se não teve erro
+                    try:
+                        execution_time = time.time() - start_time
+                        processed_result = self._process_ping_results(ping_results, execution_time)
+                        results[address] = {
+                            'status': 'success',
+                            'data': processed_result
+                        }
+                    except Exception as e:
+                        results[address] = {
+                            'status': 'error',
+                            'error': str(e),
+                            'data': {
+                                'packets_sent': 0,
+                                'packets_received': 0,
+                                'packet_loss_percent': 100.0,
+                                'status': 'unreachable'
+                            }
+                        }
+            
+            execution_time = time.time() - start_time
+            successful = sum(1 for r in results.values() if r['status'] == 'success')
+            logger.info(f"Batch ping API paralelo: {successful}/{len(addresses)} sucessos em {execution_time:.2f}s")
+            
             return results
             
         except Exception as e:
-            logger.error(f"Erro no batch ping via API {self.host}: {e}")
-            # Retorna erro para todos os endereços
+            logger.error(f"Erro no batch ping API paralelo {self.host}: {e}")
+            # Retorna erro para endereços não processados
             error_data = {
                 'packets_sent': 0,
                 'packets_received': 0,
                 'packet_loss_percent': 100.0,
                 'status': 'unreachable'
             }
-            return {
-                addr: {'status': 'error', 'error': str(e), 'data': error_data} 
-                for addr in addresses
-            }
+            
+            for address in addresses:
+                if address not in results:
+                    results[address] = {'status': 'error', 'error': str(e), 'data': error_data}
+            
+            return results
     
     def execute_traceroute(self, address: str, max_hops: int = 30) -> Dict[str, Any]:
         """Executa traceroute via API"""
@@ -591,10 +682,48 @@ mikrotik_api_pool = MikroTikAPIPool(max_connections_per_host=config.MAX_CONNECTI
 
 # Interface compatível com o sistema existente
 class MikroTikConnector:
-    """Interface compatível para substituir o conector SSH"""
+    """Pool de conexões MikroTik otimizado para alta concorrência"""
     
     def __init__(self):
-        self.api_pool = mikrotik_api_pool
+        # Pool de conexões por host
+        self.pools = {}  # {host_key: [MikroTikAPIConnection]}
+        self.pool_lock = threading.RLock()
+        
+        # Semáforos para controlar concorrência por host
+        self.host_semaphores = {}  # {host_key: threading.Semaphore}
+        
+        # Thread pool para operações paralelas
+        self.thread_pool = ThreadPoolExecutor(
+            max_workers=config.MAX_WORKERS,
+            thread_name_prefix='mikrotik-pool'
+        )
+        
+        # Configurações
+        self.max_connections_per_host = config.MAX_CONNECTIONS_PER_HOST
+        self.max_concurrent_per_host = config.MAX_CONCURRENT_COMMANDS
+        
+        # Estatísticas
+        self.stats = {
+            'total_connections': 0,
+            'active_connections': 0,
+            'reused_connections': 0,
+            'api_calls': 0,
+            'batch_calls': 0,
+            'failed_connections': 0,
+            'peak_concurrent': 0,
+            'concurrent_requests': 0
+        }
+        self.stats_lock = threading.Lock()
+    
+    def _get_pool_key(self, host: str, username: str, port: int) -> str:
+        """Gera chave única para o pool"""
+        return f"{host}:{port}:{username}"
+    
+    def _get_host_semaphore(self, host_key: str) -> threading.Semaphore:
+        """Obtém semáforo para controlar concorrência por host"""
+        if host_key not in self.host_semaphores:
+            self.host_semaphores[host_key] = threading.Semaphore(self.max_concurrent_per_host)
+        return self.host_semaphores[host_key]
     
     def execute_command(self, host: str, username: str, password: str, command: str, port: int = 8728) -> Dict[str, Any]:
         """
@@ -611,7 +740,7 @@ class MikroTikConnector:
                 ping_params = self._parse_ping_command(command)
                 
                 # Executa via API
-                api_result = self.api_pool.execute_ping(
+                api_result = mikrotik_api_pool.execute_ping(
                     host, username, password,
                     ping_params['address'],
                     ping_params.get('count', 4),
@@ -637,7 +766,7 @@ class MikroTikConnector:
                 trace_params = self._parse_traceroute_command(command)
                 
                 # Executa via API
-                api_result = self.api_pool.execute_traceroute(
+                api_result = mikrotik_api_pool.execute_traceroute(
                     host, username, password,
                     trace_params['address'],
                     trace_params.get('max_hops', 30),
@@ -662,7 +791,7 @@ class MikroTikConnector:
                 return {
                     'status': 'error',
                     'output': '',
-                    'error': f'Comando não suportado na versão API-only: {command}',
+                    'error': f'Comando não suportado: {command}',
                     'exit_status': 1,
                     'execution_time_seconds': time.time() - start_time,
                     'timestamp': datetime.now().isoformat(),
@@ -757,15 +886,207 @@ class MikroTikConnector:
     
     def get_connection_stats(self) -> Dict[str, Any]:
         """Retorna estatísticas das conexões"""
-        return self.api_pool.get_stats()
+        return mikrotik_api_pool.get_stats()
     
     def test_connection(self, host: str, username: str, password: str, port: int = 8728) -> Dict[str, Any]:
         """Testa conectividade"""
-        return self.api_pool.test_connection(host, username, password, port)
+        return mikrotik_api_pool.test_connection(host, username, password, port)
+    
+    # ===== MÉTODOS ASYNC PARA ALTA CONCORRÊNCIA =====
+    
+    async def execute_batch_ping(self, host: str, username: str, password: str, 
+                                 targets: List[str], count: int = 4, use_cache: bool = True,
+                                 port: int = 8728) -> List[Dict[str, Any]]:
+        """Executa batch de pings com máxima concorrência usando API"""
+        
+        host_key = self._get_pool_key(host, username, port)
+        semaphore = self._get_host_semaphore(host_key)
+        
+        async def single_ping_task(target: str) -> Dict[str, Any]:
+            """Task para ping individual"""
+            with semaphore:  # Controla concorrência por host
+                with self.stats_lock:
+                    self.stats['concurrent_requests'] += 1
+                    if self.stats['concurrent_requests'] > self.stats['peak_concurrent']:
+                        self.stats['peak_concurrent'] = self.stats['concurrent_requests']
+                
+                try:
+                    # Executa ping em thread pool para não bloquear async
+                    loop = asyncio.get_event_loop()
+                    result = await loop.run_in_executor(
+                        self.thread_pool,
+                        mikrotik_api_pool.execute_ping,
+                        host, username, password, target, count, 64, port
+                    )
+                    
+                    return {
+                        'target': target,
+                        'status': 'success',
+                        'data': result,
+                        'execution_time_seconds': result.get('execution_time_seconds', 0),
+                        'cached': False
+                    }
+                    
+                except Exception as e:
+                    return {
+                        'target': target,
+                        'status': 'error',
+                        'error': str(e),
+                        'execution_time_seconds': 0,
+                        'cached': False
+                    }
+                finally:
+                    with self.stats_lock:
+                        self.stats['concurrent_requests'] -= 1
+        
+        # Executa TODOS os pings simultaneamente
+        tasks = [single_ping_task(target) for target in targets]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Processa exceções
+        processed_results = []
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                processed_results.append({
+                    'target': targets[i],
+                    'status': 'error',
+                    'error': str(result),
+                    'execution_time_seconds': 0
+                })
+            else:
+                processed_results.append(result)
+        
+        return processed_results
+    
+    async def execute_single_command(self, host: str, username: str, password: str,
+                                     command: str, parameters: Dict = None, use_cache: bool = True,
+                                     port: int = 8728) -> Dict[str, Any]:
+        """Executa comando único de forma assíncrona"""
+        
+        loop = asyncio.get_event_loop()
+        
+        try:
+            # Executa comando em thread pool para não bloquear async
+            result = await loop.run_in_executor(
+                self.thread_pool,
+                self.execute_command,
+                host, username, password, command, port
+            )
+            
+            return result
+            
+        except Exception as e:
+            return {
+                'status': 'error',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }
+    
+    async def execute_batch_commands(self, host: str, username: str, password: str,
+                                     commands: List[Dict], max_concurrent: int = None,
+                                     port: int = 8728) -> List[Dict[str, Any]]:
+        """Executa múltiplos comandos simultaneamente"""
+        
+        if max_concurrent is None:
+            max_concurrent = self.max_concurrent_per_host
+        
+        # Semáforo para controlar concorrência
+        cmd_semaphore = asyncio.Semaphore(max_concurrent)
+        
+        async def single_command_task(cmd_info: Dict) -> Dict[str, Any]:
+            """Task para comando individual"""
+            async with cmd_semaphore:
+                command = cmd_info.get('command', '')
+                parameters = cmd_info.get('parameters', {})
+                
+                return await self.execute_single_command(
+                    host, username, password, command, parameters, port=port
+                )
+        
+        # Executa todos os comandos simultaneamente
+        tasks = [single_command_task(cmd) for cmd in commands]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Processa exceções
+        processed_results = []
+        for result in results:
+            if isinstance(result, Exception):
+                processed_results.append({
+                    'status': 'error',
+                    'error': str(result)
+                })
+            else:
+                processed_results.append(result)
+        
+        return processed_results
+    
+    async def execute_multiple_hosts(self, hosts_config: List[Dict], command: str,
+                                     parameters: Dict = None, max_concurrent_hosts: int = None) -> Dict[str, Any]:
+        """Executa comando em múltiplos hosts simultaneamente"""
+        
+        if max_concurrent_hosts is None:
+            max_concurrent_hosts = config.MAX_CONCURRENT_HOSTS
+        
+        # Semáforo para controlar hosts simultâneos
+        host_semaphore = asyncio.Semaphore(max_concurrent_hosts)
+        
+        async def single_host_task(host_config: Dict) -> Dict[str, Any]:
+            """Task para host individual"""
+            async with host_semaphore:
+                return await self.execute_single_command(
+                    host_config['host'],
+                    host_config['username'],
+                    host_config['password'],
+                    command,
+                    parameters,
+                    port=host_config.get('port', 8728)
+                )
+        
+        # Executa em todos os hosts simultaneamente
+        tasks = [single_host_task(host_config) for host_config in hosts_config]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Organiza resultados por host
+        host_results = {}
+        for i, result in enumerate(results):
+            host_key = f"{hosts_config[i]['host']}:{hosts_config[i].get('port', 8728)}"
+            if isinstance(result, Exception):
+                host_results[host_key] = {'status': 'error', 'error': str(result)}
+            else:
+                host_results[host_key] = result
+        
+        return host_results
+    
+    async def close_all_connections(self):
+        """Fecha todas as conexões e limpa recursos"""
+        mikrotik_api_pool.cleanup_all_connections()
+        self.thread_pool.shutdown(wait=True)
+        logger.info("Todas as conexões e recursos foram fechados")
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Retorna estatísticas completas do conector"""
+        base_stats = mikrotik_api_pool.get_stats()
+        
+        with self.stats_lock:
+            base_stats['concurrency'] = {
+                'current_concurrent_requests': self.stats['concurrent_requests'],
+                'peak_concurrent_requests': self.stats['peak_concurrent'],
+                'max_concurrent_per_host': self.max_concurrent_per_host,
+                'max_connections_per_host': self.max_connections_per_host,
+                'thread_pool_workers': config.MAX_WORKERS
+            }
+        
+        return base_stats
+    
+    def clear_cache(self):
+        """Limpa cache (compatibilidade)"""
+        # Cache é gerenciado pelo pool de conexões
+        mikrotik_api_pool.cleanup_idle_connections(max_idle_time=0)
+        logger.info("Cache limpo - conexões ociosas removidas")
 
 
-# Instância global compatível
-mikrotik = MikroTikConnector()
+# Instância global do conector otimizado
+mikrotik_connector = MikroTikConnector()
 
 
 if __name__ == "__main__":

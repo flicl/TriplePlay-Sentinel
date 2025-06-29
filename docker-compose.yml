@@ -1,8 +1,6 @@
 # 🐳 TriplePlay-Sentinel - Docker Compose
 # Sistema de Monitoramento MikroTik com Redis para cache de alta performance
 
-version: '3.8'
-
 services:
   # =================================================================
   # CORE SERVICES
@@ -34,10 +32,6 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       CACHE_TTL: 30
       
-      # SSH/MikroTik
-      SSH_TIMEOUT: 30
-      SSH_MAX_RETRIES: 3
-      
       # Performance
       MAX_WORKERS: 10
       REQUEST_TIMEOUT: 60
@@ -68,7 +62,7 @@ services:
           cpus: '0.5'
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health", "||", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -76,7 +70,7 @@ services:
     
     labels:
       - "com.tripleplay.service=sentinel-collector"
-      - "com.tripleplay.version=2.1.0"
+      - "com.tripleplay.version=2.2.2"
 
   # =================================================================
   # CACHE

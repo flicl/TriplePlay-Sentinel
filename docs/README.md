@@ -4,7 +4,7 @@ This directory contains the complete documentation for TriplePlay-Sentinel, an e
 
 ## 📖 Documentation Overview
 
-TriplePlay-Sentinel provides a comprehensive monitoring solution that enables Zabbix to perform network connectivity tests through MikroTik devices via SSH. The system features intelligent caching, connection pooling, and a modern REST API architecture.
+TriplePlay-Sentinel provides a comprehensive monitoring solution that enables Zabbix to perform network connectivity tests through MikroTik devices via **100% API architecture**. The system features intelligent caching, connection pooling, parallel batch processing, and eliminates SSH dependencies for maximum performance and security.
 
 ## 🗂️ Documentation Structure
 
@@ -44,13 +44,15 @@ TriplePlay-Sentinel provides a comprehensive monitoring solution that enables Za
 
 ## 🎯 Key Features Documented
 
-- **ICMP Ping Testing** - Comprehensive latency and packet loss monitoring
+- **ICMP Ping Testing** - Comprehensive latency and packet loss monitoring via API
 - **Traceroute Analysis** - Network path analysis with detailed hop information
 - **Smart Caching** - Redis-powered caching with configurable TTL
-- **SSH Connection Pooling** - Optimized MikroTik device connections
+- **API Connection Pooling** - Optimized MikroTik device connections using librouteros
+- **Batch Processing** - Parallel command execution for maximum performance
 - **Health Monitoring** - System health checks and performance metrics
 - **Web Dashboard** - Real-time monitoring interface
 - **Docker Deployment** - Production-ready containerization
+- **SSL/TLS Support** - Secure API connections (8728/8729)
 
 ## 🔗 Quick Navigation
 

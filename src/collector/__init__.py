@@ -18,12 +18,12 @@ Componentes principais:
 Versão: 2.1.0
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "TriplePlay Team"
 __email__ = "support@tripleplay.com"
 
 # Imports principais para facilitar uso do package
-from .sentinel_config import config_api as config
+from .sentinel_config import config
 from .models import TestResult, TestParameters, SystemStats
 from .cache import cache
 from .mikrotik_connector import MikroTikConnector

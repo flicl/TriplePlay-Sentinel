@@ -1,6 +1,6 @@
-# 🐳 Guia Docker Run Manual - TriplePlay-Sentinel (API-Only)
+# 🐳 Guia Docker Run Manual - TriplePlay-Sentinel
 
-Este guia mostra como executar o TriplePlay-Sentinel usando comandos `docker run -d` diretos, sem docker-compose. Esta versão utiliza **100% API MikroTik** com a biblioteca **librouteros**, eliminando completamente o SSH.
+Este guia mostra como executar o TriplePlay-Sentinel usando comandos `docker run -d` diretos, sem docker-compose. Esta versão utiliza a biblioteca **librouteros** para máxima performance com a API MikroTik.
 
 ## 📋 Pré-requisitos
 
@@ -9,14 +9,13 @@ Este guia mostra como executar o TriplePlay-Sentinel usando comandos `docker run
 - MikroTik com API habilitada (porta 8728/8729)
 - Acesso às portas necessárias
 
-## ⚡ Principais Mudanças (API-Only)
+## ⚡ Principais Características
 
-- ✅ **100% API MikroTik** - Sem SSH
-- ✅ **librouteros** - Biblioteca nativa e otimizada  
-- ✅ **Pool de Conexões** - Máxima performance
-- ✅ **Batch Processing** - Comandos em lote
+- ✅ **API MikroTik Nativa** - Biblioteca librouteros otimizada
+- ✅ **Pool de Conexões** - Máxima performance e reutilização
+- ✅ **Batch Processing** - Comandos paralelos em lote
 - ✅ **SSL/TLS Support** - Conexões seguras
-- ❌ **Sem SSH** - Dependências removidas
+- ✅ **Alta Concorrência** - Suporte a 1000+ requisições simultâneas
 
 ## 🏗️ Arquitetura de Rede
 
@@ -89,7 +88,7 @@ docker logs tripleplay-redis
 docker inspect tripleplay-redis --format='{{.State.Health.Status}}'
 ```
 
-### 5. Executar TriplePlay-Sentinel (API-Only)
+### 5. Executar TriplePlay-Sentinel
 
 ```bash
 docker run -d \
@@ -98,8 +97,6 @@ docker run -d \
   --network public_network \
   --network app_network \
   --restart unless-stopped \
-  --memory="512m" \
-  --cpus="4.0" \
   --publish 58500:5000 \
   --volume /root/TriplePlay-Sentinel/logs:/app/logs \
   --env COLLECTOR_HOST=0.0.0.0 \
@@ -109,14 +106,21 @@ docker run -d \
   --env REDIS_HOST=redis \
   --env REDIS_PORT=6379 \
   --env REDIS_DB=0 \
-  --env CACHE_TTL=30 \
-  --env MAX_WORKERS=10 \
-  --env REQUEST_TIMEOUT=60 \
+  --env CACHE_TTL=15 \
+  --env MAX_CACHE_SIZE=5000 \
+  --env MAX_WORKERS=50 \
+  --env MAX_CONCURRENT_HOSTS=15 \
+  --env MAX_CONCURRENT_COMMANDS=200 \
+  --env MAX_CONNECTIONS_PER_HOST=50 \
+  --env MIKROTIK_API_TIMEOUT=30 \
+  --env MIKROTIK_MAX_RETRIES=3 \
+  --env REQUEST_TIMEOUT=120 \
+  --env GUNICORN_WORKERS=6 \
   --env ENABLE_AUTH=true \
   --env API_KEY=k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1 \
   --label "com.tripleplay.service=sentinel-collector" \
   --label "com.tripleplay.version=2.1.0" \
-  --health-cmd="curl -f http://localhost:5000/health" \
+  --health-cmd="curl -f http://localhost:5000/health || wget --no-verbose --tries=1 --spider http://localhost:5000/health" \
   --health-interval=30s \
   --health-timeout=10s \
   --health-retries=3 \
@@ -124,7 +128,35 @@ docker run -d \
   tripleplay-sentinel:latest
 ```
 
-## 🔑 Gerando API Key (Opcional)
+## � Variáveis de Ambiente Otimizadas
+
+As seguintes variáveis foram configuradas para **alta concorrência** (1000-2000 requisições simultâneas):
+
+### 📊 **Recursos do Container**
+- `--memory="1g"` - **1GB RAM** para suportar alta carga
+- `--cpus="8.0"` - **8 CPU cores** para máximo paralelismo
+
+### 🔧 **Configurações de Concorrência**
+- `MAX_CONCURRENT_HOSTS=15` - Máximo **15 MikroTiks** simultâneos
+- `MAX_CONCURRENT_COMMANDS=200` - **200 comandos** por MikroTik simultaneamente  
+- `MAX_CONNECTIONS_PER_HOST=50` - **50 conexões TCP** por MikroTik
+- `MAX_WORKERS=50` - **50 threads** para operações paralelas
+
+### ⚡ **Performance e Cache**
+- `CACHE_TTL=15` - Cache de **15 segundos** (dados mais frescos)
+- `MAX_CACHE_SIZE=5000` - Cache para **5000 resultados**
+- `REQUEST_TIMEOUT=120` - **2 minutos** timeout (traceroute pode demorar)
+- `MIKROTIK_API_TIMEOUT=30` - **30 segundos** timeout por comando
+
+### 🌐 **Servidor Web (Gunicorn)**
+- `GUNICORN_WORKERS=6` - **6 workers** Gunicorn para alta carga
+
+### 🎯 **Capacidade Total:**
+- ✅ **15 MikroTiks × 200 comandos = 3000 operações simultâneas**
+- ✅ **50 conexões TCP por MikroTik = distribuição eficiente**
+- ✅ **Suporte completo ao seu cenário de alta concorrência**
+
+---
 
 Se você quiser habilitar autenticação na API, precisa gerar uma chave segura primeiro:
 
@@ -230,6 +262,36 @@ curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
      }' \
      http://localhost:58500/api/v2/mikrotik/ping
 
+# Teste de alta concorrência - 50 IPs simultaneamente
+curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "host": "192.168.1.1",
+       "username": "admin", 
+       "password": "senha",
+       "targets": [
+         "8.8.8.8", "1.1.1.1", "8.8.4.4", "1.0.0.1",
+         "9.9.9.9", "208.67.222.222", "208.67.220.220",
+         "76.76.19.19", "76.76.76.76", "94.140.14.14",
+         "149.112.112.112", "185.228.168.9", "185.228.169.9",
+         "77.88.8.8", "77.88.8.1", "156.154.70.1",
+         "156.154.71.1", "8.26.56.26", "8.20.247.20",
+         "199.85.126.10", "199.85.127.10", "81.218.119.11",
+         "209.244.0.3", "209.244.0.4", "195.46.39.39",
+         "195.46.39.40", "69.146.16.1", "69.146.17.1",
+         "216.146.35.35", "216.146.36.36", "37.235.1.174",
+         "37.235.1.177", "198.101.242.72", "23.253.163.53",
+         "64.6.64.6", "64.6.65.6", "84.200.69.80",
+         "84.200.70.40", "8.8.8.1", "168.95.1.1",
+         "168.95.192.1", "203.80.96.10", "203.80.96.9",
+         "180.76.76.76", "119.29.29.29", "114.114.114.114",
+         "223.5.5.5", "223.6.6.6", "117.50.11.11",
+         "117.50.22.22", "101.226.4.6"
+       ],
+       "count": 4
+     }' \
+     http://localhost:58500/api/v2/mikrotik/ping
+
 # Ping via API MikroTik (porta customizada)
 curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
      -H "Content-Type: application/json" \
@@ -269,6 +331,10 @@ curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
        "use_ssl": true
      }' \
      http://localhost:58500/api/v2/test-connection
+
+# Ver estatísticas de performance
+curl -H "X-API-Key: k8J9mP2xQ7wN5sR1vZ3cF6hL0dA4tY8uE9iO7bG2nM1" \
+     http://localhost:58500/api/v2/stats
 ```
 ```
 
@@ -410,4 +476,4 @@ docker stats
 
 ---
 
-*Documentação gerada para TriplePlay-Sentinel v2.1.0 (API-Only)*
+*Documentação gerada para TriplePlay-Sentinel v2.2.2 (API-Only)*
